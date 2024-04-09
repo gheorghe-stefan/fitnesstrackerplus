@@ -1,0 +1,5 @@
+- typescript & react stub
+- simple interface
+- connect with BT to treadmill (see PANAN's repos)
+- convert the python methods to typescript
+- put it all together => record data, create gpx for strava
