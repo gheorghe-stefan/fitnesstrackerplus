@@ -1,5 +1,19 @@
-- typescript & react stub
-- simple interface
+* typescript & react stub
+- simple interface, similar pbr
+    - connect to HR button, toggle-able
+    - connect to treadmill button
+    - settings
+    - start - resume/save/discard
+    - graph in the middle with speed/pace/elevation plot/timer/others?
+    - load trainings (later)
 - connect with BT to treadmill (see PANAN's repos)
-- convert the python methods to typescript
-- put it all together => record data, create gpx for strava
+    - button on/off
+        - what if off?
+- connect to heartrate
+    - button on/off
+    - looks for HR (it may be belt or watch broadcasting)
+    - starts getting data into a variable - current HR
+- various:
+    - logging
+    - telemetry?
+    - version
