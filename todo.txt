@@ -17,3 +17,13 @@
     - logging
     - telemetry?
     - version
+
+
+Milestone 1:
+- ability to connect to HR, start a recording and having a hr entry per second
+
+Milestone 2:
+- same as above for Fitness machine, read only
+
+Milestone 3:
+- prepare trainings, perform also writes

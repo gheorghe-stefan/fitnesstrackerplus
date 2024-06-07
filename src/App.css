@@ -166,6 +166,15 @@ a.button:active {
   border-radius: 10px;
 }
 
+.right-container {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.left-container {
+  display: flex;
+  justify-content: flex-start;
+}
 
 .field {
   color: white;
