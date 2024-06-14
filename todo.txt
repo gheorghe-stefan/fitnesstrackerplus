@@ -20,10 +20,17 @@
 
 
 Milestone 1:
-- ability to connect to HR, start a recording and having a hr entry per second
+- ability to connect to HR
+- create a recording mode on/off - start/pause/stop
+- store current values (timestamp, hr), keep a list, at end -> dump in gpx
 
 Milestone 2:
 - same as above for Fitness machine, read only
+- add new values to current recording: speed, create lat/long pairs each second (see python)
 
 Milestone 3:
-- prepare trainings, perform also writes
+- save data in gpx, adapt to fitness inclination (final milestone for alpha release - e.g. for my use case)
+
+Future:
+- concept for future to configure inclination levels
+- prepare trainings, perform also writes to the trainer
