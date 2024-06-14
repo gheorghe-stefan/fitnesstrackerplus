@@ -109,7 +109,15 @@ class App extends React.Component<any, AppState>
           </header>
 
           <div className="App-content">
-            {/* Main content */}
+          <section>
+            <table>
+              <tr>
+                <td>{this.state.heartRate == null ? 0 : this.state.heartRate} bpm</td>
+                <td>NaN</td>
+                <td>NaN</td>
+              </tr>
+            </table>
+          </section>
           </div>
 
           <div className="App-footer">
