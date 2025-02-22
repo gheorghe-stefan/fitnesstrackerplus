@@ -7,7 +7,7 @@ import { HeartBroken } from '@mui/icons-material';
 class AppState
 {
   heartRateSensorName: string | null = null;
-  heartRate: number | null = null;
+  heartRate: number = 0;
   isTreadmillConnected: boolean = false;
   isHRConnected: boolean = false;
 }
@@ -48,7 +48,7 @@ class App extends React.Component<any, AppState>
     this.setState(
       {
         heartRateSensorName: null,
-        heartRate: null
+        heartRate: 0
       });
   }
 
@@ -110,12 +110,14 @@ class App extends React.Component<any, AppState>
 
           <div className="App-content">
           <section>
-            <table>
-              <tr>
-                <td>{this.state.heartRate == null ? 0 : this.state.heartRate} bpm</td>
-                <td>NaN</td>
-                <td>NaN</td>
-              </tr>
+            <table className="App-content-table">
+              <tbody>
+                <tr>
+                  <td className="big-font">{this.state.heartRate} bpm</td>
+                  <td className="big-font">{this.state.heartRate / 2}</td>
+                  <td className="big-font">{this.state.heartRate / 3}</td>
+                </tr>
+              </tbody>
             </table>
           </section>
           </div>

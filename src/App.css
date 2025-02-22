@@ -16,6 +16,7 @@
 .App-content {
   flex-grow: 1;
   display: flex;
+  border: 1px solid red;
 }
 
 .App {
@@ -52,6 +53,11 @@
   background: -webkit-linear-gradient(145deg, #2f5c05, #91a47d);
   background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+.big-font {
+  font-size: 2em; /* adjust as needed */
+  text-align: center;
 }
 
 .ControlsContainer {
