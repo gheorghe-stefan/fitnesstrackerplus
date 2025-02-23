@@ -201,6 +201,10 @@ a.button:active {
   transform: scale(1.4);
 }
 
+.timer {
+  text-align: center;
+  margin-top: 20px;
+}
 
 dialog {
   background-color: #555;

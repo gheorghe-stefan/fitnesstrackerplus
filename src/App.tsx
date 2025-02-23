@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { SensorManager } from './sensors/SensorManager';
-import { AppBar, Box, Button, Dialog, Icon, IconButton, ThemeProvider, Toolbar, Tooltip, Typography, createTheme } from '@mui/material';
+import { AppBar, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Icon, IconButton, ThemeProvider, Toolbar, Tooltip, Typography, createTheme } from '@mui/material';
 import './App.css';
 import { HeartBroken } from '@mui/icons-material';
+import { saveAs } from 'file-saver';
 
 class AppState
 {
@@ -10,11 +11,16 @@ class AppState
   heartRate: number = 0;
   isTreadmillConnected: boolean = false;
   isHRConnected: boolean = false;
+  isRecording: boolean = false;
+  timer: number = 0;
+  hrData: number[] = [];
+  isDialogOpen: boolean = false; 
 }
 
 class App extends React.Component<any, AppState>
 {
   SensorManager : SensorManager = new SensorManager();
+  private intervalId: NodeJS.Timeout | null = null;
 
   constructor(props: any)
   {
@@ -51,6 +57,60 @@ class App extends React.Component<any, AppState>
         heartRate: 0
       });
   }
+
+  private handleStartPause = () => {
+    this.setState((prevState) => {
+      if (prevState.isRecording) {
+        if (this.intervalId) {
+          clearInterval(this.intervalId);
+          this.intervalId = null;
+        }
+      } else {
+        this.intervalId = setInterval(() => {
+          this.setState((prevState) => ({
+            timer: prevState.timer + 1,
+            hrData: [...prevState.hrData, prevState.heartRate],
+          }));
+        }, 1000);
+      }
+      return { isRecording: !prevState.isRecording };
+    });
+  };
+  
+  private handleStop = () => {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
+    }
+    this.setState({ isRecording: false, timer: 0 });
+    this.saveDataToFile(this.state.hrData);
+    this.setState({ hrData: [] });
+  };
+  
+  private saveDataToFile = (data: number[]) => {
+    const blob = new Blob([data.join('\n')], { type: 'text/plain;charset=utf-8' });
+    saveAs(blob, 'hr_data.txt');
+  };
+  
+  private formatTime = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  private handleDialogOpen = () => {
+    this.setState({ isDialogOpen: true });
+  };
+
+  private handleDialogClose = () => {
+    this.setState({ isDialogOpen: false });
+  };
+
+  private handleDialogConfirm = () => {
+    this.handleStop();
+    this.setState({ isDialogOpen: false });
+  };
 
   setHRConnection(arg0: boolean): void
   {
@@ -109,17 +169,21 @@ class App extends React.Component<any, AppState>
           </header>
 
           <div className="App-content">
-          <section>
-            <table className="App-content-table">
-              <tbody>
-                <tr>
-                  <td className="big-font">{this.state.heartRate} bpm</td>
-                  <td className="big-font">{this.state.heartRate / 2}</td>
-                  <td className="big-font">{this.state.heartRate / 3}</td>
-                </tr>
-              </tbody>
-            </table>
-          </section>
+            <section>
+              <table className="App-content-table">
+                <tbody>
+                  <tr>
+                    <td className="big-font">{this.state.heartRate} bpm</td>
+                    <td className="big-font">{this.state.heartRate / 2}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+            <div className="timer">
+                <h2>{this.formatTime(this.state.timer)}</h2>
+                <Button onClick={this.handleStartPause}>{this.state.isRecording ? 'Pause' : 'Start'}</Button>
+                <Button onClick={this.handleDialogOpen}>Stop</Button>
+              </div>
           </div>
 
           <div className="App-footer">
@@ -128,6 +192,28 @@ class App extends React.Component<any, AppState>
           </footer>
           </div>
         </div>
+
+        <Dialog
+            open={this.state.isDialogOpen}
+            onClose={this.handleDialogClose}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+          >
+            <DialogTitle id="alert-dialog-title">{"Stop Recording?"}</DialogTitle>
+            <DialogContent>
+              <DialogContentText id="alert-dialog-description">
+                Are you sure you want to stop the recording and save the data?
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={this.handleDialogClose} color="primary">
+                No
+              </Button>
+              <Button onClick={this.handleDialogConfirm} color="primary" autoFocus>
+                Yes
+              </Button>
+            </DialogActions>
+          </Dialog>
       </ThemeProvider>
     );
   }
