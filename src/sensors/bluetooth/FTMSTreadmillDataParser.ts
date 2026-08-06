@@ -1,25 +1,25 @@
 import { TreadmillData } from '../../domain/TreadmillData';
+import { ITreadmillProfile, SportstechF37sProfile } from './TreadmillProfiles';
 
 /**
- * Converts Sportstech F37s raw incline level (0..15) to physical grade percentage.
- * Based on manufacturer manual specification:
- * - Level 0: 4.5%
- * - Level 1..15: 6.0 + level * 0.3% (6.3% to 10.5%)
+ * Re-export convertInclineLevelToPercentage for backwards compatibility and tests.
  */
 export function convertInclineLevelToPercentage(level: number): number {
-  if (level <= 0) return 4.5;
-  const clamped = Math.min(15, level);
-  return Number((6.0 + clamped * 0.3).toFixed(1));
+  return SportstechF37sProfile.parseIncline(level * 2).inclinationPercent;
 }
 
 /**
  * Parses raw FTMS Treadmill Data (Characteristic 0x2ACD) DataView.
- * Follows the Bluetooth SIG Fitness Machine Service (FTMS) specification.
+ * Supports pluggable device profiles (defaults to Sportstech F37s profile).
  *
  * @param data DataView payload received from 0x2ACD notification
+ * @param profile Pluggable profile strategy for manufacturer-specific quirks
  * @returns Parsed TreadmillData object
  */
-export function parseFTMSTreadmillData(data: DataView): TreadmillData {
+export function parseFTMSTreadmillData(
+  data: DataView,
+  profile: ITreadmillProfile = SportstechF37sProfile
+): TreadmillData {
   if (data.byteLength < 2) {
     return {
       speed: 0,
@@ -38,6 +38,7 @@ export function parseFTMSTreadmillData(data: DataView): TreadmillData {
 
   let speed = 0;
   let rawInclineLevel = 0;
+  let inclination = 4.5;
   let distance = 0;
   let calories = 0;
   let heartRate = 0;
@@ -68,18 +69,13 @@ export function parseFTMSTreadmillData(data: DataView): TreadmillData {
   }
 
   // Bit 3: Inclination and Ramp Angle Present
-  // Inclination (sint16, 0.1% or integer level) + Ramp Angle (sint16, 0.1%)
+  // Inclination (sint16) + Ramp Angle (sint16)
   const isInclinationPresent = (flags & (1 << 3)) !== 0;
   if (isInclinationPresent && offset + 2 <= data.byteLength) {
     const rawInc = data.getInt16(offset, true);
-    // On F37s and many treadmills, rawInc is sent as integer level (0..15) or 0.1% units
-    // If rawInc is > 15 (e.g. 45 for 4.5%), it's already in 0.1% units.
-    // If rawInc is 0..15, it's the raw incline level.
-    if (rawInc >= 0 && rawInc <= 15) {
-      rawInclineLevel = rawInc;
-    } else {
-      rawInclineLevel = Math.round((rawInc / 10 - 6.0) / 0.3);
-    }
+    const parsed = profile.parseIncline(rawInc);
+    rawInclineLevel = parsed.rawLevel;
+    inclination = parsed.inclinationPercent;
     offset += 2;
 
     // Ramp angle follow-up sint16 if buffer allows
@@ -134,9 +130,6 @@ export function parseFTMSTreadmillData(data: DataView): TreadmillData {
     elapsedTime = data.getUint16(offset, true);
     offset += 2;
   }
-
-  // Calculate grade percentage from raw incline level
-  const inclination = convertInclineLevelToPercentage(rawInclineLevel);
 
   return {
     speed,

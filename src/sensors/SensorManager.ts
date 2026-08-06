@@ -2,7 +2,7 @@ import { ISensor } from '../domain/ISensor';
 import { TreadmillData } from '../domain/TreadmillData';
 import { BluetoothLESensor } from "./bluetooth/BluetoothLESensor";
 import { HRBluetoothSensor } from "./bluetooth/BluetoothSensors";
-import { TreadmillBluetoothSensor } from "./bluetooth/TreadmillBluetoothSensor";
+import { SportstechF37sBluetoothSensor } from "./bluetooth/TreadmillBluetoothSensor";
 import VirtualSensors from "./VirtualSensors";
 
 export class SensorManager
@@ -39,13 +39,30 @@ export class SensorManager
         }
         else
         {
-            // 0x1826 is standard FTMS (Fitness Machine Service)
-            const bluetoothDevice = await this.SearchDevice("fitness_machine", ["00001826-0000-1000-8000-00805f9b34fb"]);
+            const bluetoothDevice = await this.SearchTreadmillDevice();
             const bluetoothSensor = new BluetoothLESensor(bluetoothDevice, "fitness_machine");
-            this._TreadmillSensor = new TreadmillBluetoothSensor(bluetoothSensor);
+            this._TreadmillSensor = new SportstechF37sBluetoothSensor(bluetoothSensor);
         }
 
         return this._TreadmillSensor;
+    }
+
+    private async SearchTreadmillDevice(): Promise<BluetoothDevice>
+    {
+        console.log('Requesting Bluetooth Device for Treadmill (acceptAllDevices: true)...');
+        return await navigator.bluetooth.requestDevice({
+            acceptAllDevices: true,
+            optionalServices: [
+                "fitness_machine",
+                0x1826,
+                "00001826-0000-1000-8000-00805f9b34fb",
+                0xfff0,
+                "0000fff0-0000-1000-8000-00805f9b34fb",
+                "heart_rate",
+                0x180d,
+                "0000180d-0000-1000-8000-00805f9b34fb",
+            ],
+        });
     }
 
     private async SearchDevice(serviceUuid: string | number, optionalServices?: (string | number)[]) : Promise<BluetoothDevice>

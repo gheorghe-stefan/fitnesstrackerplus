@@ -68,7 +68,7 @@ describe('FTMSTreadmillDataParser', () => {
       const flags = 0x058c;
       const speedRaw = 1250; // 12.50 km/h
       const distRaw = 2500; // 2500 meters (uint24: 0xC4, 0x09, 0x00)
-      const inclineLevel = 5; // Level 5 -> 7.5%
+      const inclineRaw = 10; // Level 5 (raw 10 = 5 * 2) -> 7.5%
       const rampAngle = 0;
       const caloriesRaw = 185; // 185 kcal
       const hrRaw = 145; // 145 bpm
@@ -87,7 +87,7 @@ describe('FTMSTreadmillDataParser', () => {
       dataView.setUint8(offset + 2, (distRaw >> 16) & 0xff);
       offset += 3;
 
-      dataView.setInt16(offset, inclineLevel, true); offset += 2;
+      dataView.setInt16(offset, inclineRaw, true); offset += 2;
       dataView.setInt16(offset, rampAngle, true); offset += 2;
 
       dataView.setUint16(offset, caloriesRaw, true); offset += 2;
