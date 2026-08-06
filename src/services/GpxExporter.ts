@@ -23,10 +23,12 @@ export class GpxExporter implements IGpxExporter {
      creator="FitnessTrackerPlus">
   <metadata>
     <name>${this.escapeXml(name)}</name>
+    <desc>Powered by FitnessTracker+</desc>
     <time>${time}</time>
   </metadata>
   <trk>
     <name>${this.escapeXml(name)}</name>
+    <desc>Powered by FitnessTracker+</desc>
     <trkseg>
 ${trkpts}
     </trkseg>
@@ -37,9 +39,10 @@ ${trkpts}
   private formatTrackPoint(tp: TrackPoint): string {
     const lat = tp.lat ?? 0;
     const lon = tp.lon ?? 0;
+    const eleTag = tp.ele !== undefined ? `\n        <ele>${tp.ele}</ele>` : '';
     const extensions = this.formatExtensions(tp);
 
-    return `      <trkpt lat="${lat}" lon="${lon}">
+    return `      <trkpt lat="${lat}" lon="${lon}">${eleTag}
         <time>${tp.timestamp.toISOString()}</time>${extensions}
       </trkpt>`;
   }
@@ -49,9 +52,6 @@ ${trkpts}
 
     if (tp.hr !== undefined) {
       extensionFields.push(`            <gpxtpx:hr>${tp.hr}</gpxtpx:hr>`);
-    }
-    if (tp.speed !== undefined) {
-      extensionFields.push(`            <gpxtpx:speed>${tp.speed}</gpxtpx:speed>`);
     }
 
     if (extensionFields.length === 0) return '';

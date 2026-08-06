@@ -10,6 +10,7 @@ export interface TrackPoint {
   readonly inclination?: number;
   readonly lat?: number;
   readonly lon?: number;
+  readonly ele?: number;
 }
 
 /**

@@ -1,6 +1,6 @@
 import React from 'react';
 import { IconButton, Tooltip } from '@mui/material';
-import { Favorite, HeartBroken, FitnessCenter } from '@mui/icons-material';
+import { Favorite, HeartBroken, FitnessCenter, LocationOn } from '@mui/icons-material';
 
 export interface HeaderProps {
   sensorName: string | null;
@@ -9,10 +9,11 @@ export interface HeaderProps {
   treadmillName?: string | null;
   onConnectTreadmill?: () => void;
   onDisconnectTreadmill?: () => void;
+  onOpenGpsSettings?: () => void;
 }
 
 /**
- * App header with title, HR sensor, and Treadmill connect/disconnect buttons.
+ * App header with title, HR sensor, Treadmill, and Virtual GPS settings buttons.
  */
 export const Header: React.FC<HeaderProps> = ({
   sensorName,
@@ -21,6 +22,7 @@ export const Header: React.FC<HeaderProps> = ({
   treadmillName = null,
   onConnectTreadmill,
   onDisconnectTreadmill,
+  onOpenGpsSettings,
 }) => {
   const isHrConnected = sensorName !== null;
   const isTreadmillConnected = treadmillName !== null;
@@ -31,6 +33,15 @@ export const Header: React.FC<HeaderProps> = ({
         <h1 className="App-title-logo">FitnessTracker<span className="title-plus">+</span></h1>
       </div>
       <div className="header-right">
+        {/* Virtual GPS Settings Button */}
+        {onOpenGpsSettings && (
+          <Tooltip title="Configure Strava Virtual GPS & Elevation">
+            <IconButton className="button gps-button" onClick={onOpenGpsSettings} id="btn-gps-settings">
+              <LocationOn className="gps-icon" />
+            </IconButton>
+          </Tooltip>
+        )}
+
         {/* Heart Rate Sensor Control */}
         {isHrConnected && (
           <span className="sensor-name">{sensorName}</span>

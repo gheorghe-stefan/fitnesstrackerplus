@@ -5,7 +5,7 @@ import { ITreadmillProfile, SportstechF37sProfile } from './TreadmillProfiles';
  * Re-export convertInclineLevelToPercentage for backwards compatibility and tests.
  */
 export function convertInclineLevelToPercentage(level: number): number {
-  return SportstechF37sProfile.parseIncline(level * 2).inclinationPercent;
+  return SportstechF37sProfile.parseIncline(level * 5).inclinationPercent;
 }
 
 /**

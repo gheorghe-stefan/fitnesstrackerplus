@@ -16,14 +16,13 @@ export const SportstechF37sProfile: ITreadmillProfile = {
   id: 'sportstech_f37s',
   name: 'Sportstech F37s',
   parseIncline(rawInc: number) {
-    let level = rawInc;
-    if (rawInc > 30) {
-      level = 15;
-    } else if (rawInc > 15 && rawInc <= 30) {
-      level = rawInc / 2;
-    } else if (rawInc > 0 && rawInc <= 15 && rawInc % 2 === 0) {
-      level = rawInc / 2;
-    }
+    // Sportstech F37s hardware transmits incline scaled by 5 (each level = 5 units):
+    // Level 0  -> rawInc = 0   (0 / 5 = 0)  -> 4.5%
+    // Level 1  -> rawInc = 5   (5 / 5 = 1)  -> 6.3%
+    // Level 2  -> rawInc = 10  (10 / 5 = 2) -> 6.6%
+    // Level 8  -> rawInc = 40  (40 / 5 = 8) -> 8.4%
+    // Level 15 -> rawInc = 75  (75 / 5 = 15)-> 10.5%
+    const level = rawInc / 5;
     const clampedLevel = Math.max(0, Math.min(15, Math.round(level)));
     const percent = clampedLevel <= 0 ? 4.5 : Number((6.0 + clampedLevel * 0.3).toFixed(1));
     return { rawLevel: clampedLevel, inclinationPercent: percent };

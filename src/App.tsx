@@ -3,11 +3,13 @@ import { ThemeProvider, createTheme } from '@mui/material';
 import { saveAs } from 'file-saver';
 import { useHeartRateSensor } from './hooks/useHeartRateSensor';
 import { useTreadmillSensor } from './hooks/useTreadmillSensor';
+import { useVirtualGps } from './hooks/useVirtualGps';
 import { useRecorder } from './hooks/useRecorder';
 import { Header } from './components/Header';
 import { DataDisplay } from './components/DataDisplay';
 import { RecordingControls } from './components/RecordingControls';
 import { SaveDialog } from './components/SaveDialog';
+import { GpsSettingsDialog } from './components/GpsSettingsDialog';
 import { GpxExporter } from './services/GpxExporter';
 import { formatTime } from './services/TimeFormatter';
 import { RecordingState } from './domain/models';
@@ -29,7 +31,7 @@ const gpxExporter = new GpxExporter();
 
 /**
  * Root application shell — thin composition layer.
- * Wires hooks (sensors, recorder) to presentational components.
+ * Wires hooks (sensors, recorder, virtual GPS) to presentational components.
  * All business logic lives in hooks and services.
  */
 const App: React.FC = () => {
@@ -41,6 +43,16 @@ const App: React.FC = () => {
     connectTreadmill,
     disconnectTreadmill,
   } = useTreadmillSensor();
+
+  const {
+    gpsConfig,
+    isGpsModalOpen,
+    openGpsModal,
+    closeGpsModal,
+    updateGpsConfig,
+    computeStepData,
+    resetGpsSession,
+  } = useVirtualGps();
 
   const {
     recordingState, elapsedSeconds,
@@ -56,14 +68,25 @@ const App: React.FC = () => {
       ? heartRate
       : (isTreadmillConnected && treadmillData.heartRate > 0 ? treadmillData.heartRate : undefined);
 
+    const speed = isTreadmillConnected ? treadmillData.speed : 0;
+    const inclination = isTreadmillConnected ? treadmillData.inclination : 4.5;
+
+    const { lat, lon, ele } = computeStepData(speed, inclination, 1);
+
     setSensorData({
       hr: effectiveHr,
-      speed: isTreadmillConnected ? treadmillData.speed : undefined,
-      inclination: isTreadmillConnected ? treadmillData.inclination : undefined,
+      speed: isTreadmillConnected ? speed : undefined,
+      inclination: isTreadmillConnected ? inclination : undefined,
+      lat,
+      lon,
+      ele,
     });
-  }, [heartRate, isConnected, treadmillData, isTreadmillConnected, setSensorData]);
+  }, [heartRate, isConnected, treadmillData, isTreadmillConnected, setSensorData, computeStepData]);
 
-  const handleStart = () => start();
+  const handleStart = () => {
+    resetGpsSession();
+    start();
+  };
   const handlePause = () => pause();
   const handleResume = () => resume();
 
@@ -79,11 +102,13 @@ const App: React.FC = () => {
     const filename = `activity_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}.gpx`;
     saveAs(blob, filename);
     reset();
+    resetGpsSession();
     setDialogOpen(false);
   };
 
   const handleDiscard = () => {
     reset();
+    resetGpsSession();
     setDialogOpen(false);
   };
 
@@ -97,6 +122,7 @@ const App: React.FC = () => {
           treadmillName={treadmillName}
           onConnectTreadmill={connectTreadmill}
           onDisconnectTreadmill={disconnectTreadmill}
+          onOpenGpsSettings={openGpsModal}
         />
         <main className="App-content">
           <DataDisplay
@@ -131,6 +157,12 @@ const App: React.FC = () => {
           elapsedTime={formatTime(elapsedSeconds)}
           onSave={handleSave}
           onDiscard={handleDiscard}
+        />
+        <GpsSettingsDialog
+          open={isGpsModalOpen}
+          config={gpsConfig}
+          onSave={updateGpsConfig}
+          onClose={closeGpsModal}
         />
       </div>
     </ThemeProvider>

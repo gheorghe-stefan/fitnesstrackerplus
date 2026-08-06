@@ -23,6 +23,7 @@ describe('GpxExporter', () => {
   it('should use provided activity name', () => {
     const gpx = exporter.export([], 'Morning Run');
     expect(gpx).toContain('<name>Morning Run</name>');
+    expect(gpx).toContain('<desc>Powered by FitnessTracker+</desc>');
   });
 
   it('should generate default activity name when not provided', () => {
@@ -82,13 +83,14 @@ describe('GpxExporter', () => {
     expect(gpx).toContain('&quot;fast&quot;');
   });
 
-  it('should include speed in extensions when provided', () => {
+  it('should include elevation when provided', () => {
     const trackPoints: TrackPoint[] = [
-      { timestamp: new Date('2025-01-01T10:00:00Z'), hr: 120, speed: 12.5 },
+      { timestamp: new Date('2025-01-01T10:00:00Z'), hr: 120, ele: 755.5 },
     ];
     const gpx = exporter.export(trackPoints);
     expect(gpx).toContain('<gpxtpx:hr>120</gpxtpx:hr>');
-    expect(gpx).toContain('<gpxtpx:speed>12.5</gpxtpx:speed>');
+    expect(gpx).toContain('<ele>755.5</ele>');
+    expect(gpx).not.toContain('<gpxtpx:speed>');
   });
 
   it('should use first track point timestamp for metadata time', () => {
