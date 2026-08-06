@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material';
 import { saveAs } from 'file-saver';
 import { useHeartRateSensor } from './hooks/useHeartRateSensor';
+import { useTreadmillSensor } from './hooks/useTreadmillSensor';
 import { useRecorder } from './hooks/useRecorder';
 import { Header } from './components/Header';
 import { DataDisplay } from './components/DataDisplay';
@@ -28,11 +29,19 @@ const gpxExporter = new GpxExporter();
 
 /**
  * Root application shell — thin composition layer.
- * Wires hooks (sensor, recorder) to presentational components.
+ * Wires hooks (sensors, recorder) to presentational components.
  * All business logic lives in hooks and services.
  */
 const App: React.FC = () => {
   const { sensorName, heartRate, isConnected, connect, disconnect } = useHeartRateSensor();
+  const {
+    treadmillName,
+    treadmillData,
+    isTreadmillConnected,
+    connectTreadmill,
+    disconnectTreadmill,
+  } = useTreadmillSensor();
+
   const {
     recordingState, elapsedSeconds,
     start, pause, resume, stop, reset,
@@ -40,10 +49,19 @@ const App: React.FC = () => {
   } = useRecorder();
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Keep sensor data ref up to date for the recorder's interval callback
+  // Keep combined sensor data ref up to date for the recorder's interval callback
   useEffect(() => {
-    setSensorData({ hr: heartRate > 0 ? heartRate : undefined });
-  }, [heartRate, setSensorData]);
+    // HR priority: standalone HR sensor first, treadmill HR fallback
+    const effectiveHr = isConnected && heartRate > 0
+      ? heartRate
+      : (isTreadmillConnected && treadmillData.heartRate > 0 ? treadmillData.heartRate : undefined);
+
+    setSensorData({
+      hr: effectiveHr,
+      speed: isTreadmillConnected ? treadmillData.speed : undefined,
+      inclination: isTreadmillConnected ? treadmillData.inclination : undefined,
+    });
+  }, [heartRate, isConnected, treadmillData, isTreadmillConnected, setSensorData]);
 
   const handleStart = () => start();
   const handlePause = () => pause();
@@ -76,12 +94,17 @@ const App: React.FC = () => {
           sensorName={sensorName}
           onConnect={connect}
           onDisconnect={disconnect}
+          treadmillName={treadmillName}
+          onConnectTreadmill={connectTreadmill}
+          onDisconnectTreadmill={disconnectTreadmill}
         />
         <main className="App-content">
           <DataDisplay
             heartRate={heartRate}
             isConnected={isConnected}
             elapsedSeconds={elapsedSeconds}
+            treadmillData={treadmillData}
+            isTreadmillConnected={isTreadmillConnected}
           />
           <RecordingControls
             recordingState={recordingState}

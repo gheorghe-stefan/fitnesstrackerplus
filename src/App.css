@@ -124,6 +124,43 @@ body {
   50% { transform: scale(1.25); }
 }
 
+/* ===== TREADMILL BUTTON ===== */
+.treadmill-button {
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 50% !important;
+  transition: all 0.3s ease !important;
+}
+
+.treadmill-button.connected {
+  background: linear-gradient(145deg, #0288d1, #01579b) !important;
+  box-shadow: 0 0 20px rgba(2, 136, 209, 0.4) !important;
+}
+
+.treadmill-button.disconnected {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid var(--border-subtle) !important;
+}
+
+.treadmill-button.disconnected:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+.treadmill-icon {
+  color: var(--text-secondary) !important;
+  font-size: 1.4rem !important;
+}
+
+.treadmill-icon.active {
+  color: white !important;
+}
+
+.sensor-name.treadmill-name {
+  background: rgba(2, 136, 209, 0.15);
+  border-color: rgba(2, 136, 209, 0.35);
+  color: #4fc3f7;
+}
+
 /* ===== CONTENT ===== */
 .App-content {
   flex: 1;
@@ -192,6 +229,22 @@ body {
 .hr-value.active {
   color: var(--accent-green-light);
   text-shadow: 0 0 24px var(--glow-green);
+}
+
+.speed-value.active,
+.incline-value.active,
+.distance-value.active,
+.calories-value.active {
+  color: #4fc3f7;
+  text-shadow: 0 0 24px rgba(2, 136, 209, 0.4);
+}
+
+.metric-sublabel {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
 }
 
 .metric-unit {

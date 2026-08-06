@@ -1,0 +1,127 @@
+TECHNICAL REFERENCE MANUAL
+Sportstech F37s Treadmill
+Bluetooth Low Energy (BLE) Protocol Specification & Hardware Communication Integration
+
+================================================================================
+METADATA
+================================================================================
+Device Model:     Sportstech F37s
+BT Standard:      BLE 4.0 Standard
+Primary Protocol: FTMS / FitShow GATT
+Data Exchange:    Bidirectional (2-Way)
+
+================================================================================
+1. SYSTEM ARCHITECTURE & HARDWARE SPECS
+================================================================================
+The Sportstech F37s treadmill incorporates an integrated dual-channel Bluetooth 4.0 
+communication subsystem. The hardware design handles both real-time bidirectional 
+telemetry data (for app connectivity and trainer control) and high-quality audio 
+playback concurrently through dedicated signal paths.
+
+Core Bluetooth Capabilities:
+- Bluetooth Version: Bluetooth Low Energy (BLE) 4.0 with backwards compatibility 
+  for legacy receiver chips.
+- Dual Channel Audio & Data: Operates separate GATT data service pipelines and 
+  an A2DP audio channel (broadcasts under identifier BTMP3).
+- Sampling Frequency: Data telemetry frame broadcast frequency at 1 Hz - 2 Hz.
+- Console Interfacing: Direct integration with the 7.5" LED console, dynamically 
+  passing pulse data from external 5.3 kHz wireless chest straps and Bluetooth sensors.
+- Software Support: Native cross-platform compatibility with iOS (>= 8.0) and 
+  Android (>= 5.0).
+
+================================================================================
+2. BLE PROTOCOL & GATT SERVICES
+================================================================================
+Data transmission utilizes standard Generic Attribute Profile (GATT) structures. 
+The treadmill functions as a BLE Peripheral, exposing standardized services alongside 
+proprietary fallback characteristics for broader software compatibility.
+
+[Fitness Standard]
+- Protocol: FTMS (Fitness Machine Service)
+- UUID: 0x1826
+- Access Type: Read / Notify / Write
+- Function: Standardized protocol used by Kinomap, Sportstech Live, Zwift. Allows 
+  speed/incline telemetry and automatic resistance adjustments.
+
+[Legacy App]
+- Protocol: FitShow / iConsole Service
+- UUID: 0xFFF0 (Custom)
+- Access Type: Read / Notify
+- Function: Proprietary GATT service for backward compatibility with FitShow and 
+  older fitness management software.
+
+[Heart Rate]
+- Protocol: HRS (Heart Rate Service)
+- UUID: 0x180D
+- Access Type: Notify
+- Function: Aggregates wireless chest strap or hand-pulse sensors and re-broadcasts 
+  BPM data over BLE.
+
+[Audio Channel]
+- Protocol: A2DP Profile
+- UUID: N/A (Streaming)
+- Access Type: Sink
+- Function: Dedicated high-definition audio channel connected directly to the 
+  console's internal stereo speaker array.
+
+================================================================================
+3. OUTBOUND DATA STREAMS (Treadmill -> Application)
+================================================================================
+The console continuously streams binary telemetry status frames to connected central 
+devices (smartphones, tablets, or smartwatches).
+
+Parameters Transmitted:
+1. Instantaneous Speed:
+   - Operational Range: 0.8 - 20.0 km/h
+   - Precision: 0.1 km/h resolution
+   - Details: Real-time belt velocity setpoint and actual feedback value.
+
+2. Motorized Incline:
+   - Operational Range: 0 - 15 Levels (0 - 15%)
+   - Precision: 1 Level steps
+   - Details: Physical gradient tilt position controlled by internal motor lift.
+
+3. Accumulated Distance:
+   - Operational Range: 0.00 - 99.99 km
+   - Precision: 10-meter precision
+   - Details: Total workout distance calculated from roller rotations.
+
+4. Elapsed Time:
+   - Operational Range: 00:00 - 99:59 min
+   - Precision: 1-second increments
+   - Details: Active session runtime, excluding paused durations.
+
+5. Estimated Energy:
+   - Operational Range: 0 - 9999 kcal
+   - Precision: 1 kcal resolution
+   - Details: Algorithmic expenditure derived from speed, incline, and time.
+
+6. Heart Rate (BPM):
+   - Operational Range: 40 - 220 BPM
+   - Precision: 1 BPM resolution
+   - Details: Pass-through telemetry from 5.3 kHz wireless straps or handlebar sensors.
+
+7. Machine State Flags:
+   - Type: Bitmask / Enum Status
+   - States: Stopped, Starting, Running, Paused, Safety Key Ejected.
+
+* SAFETY PRIORITY PROTOCOL *
+Disconnection of the magnetic safety key immediately alters the Machine State Flags 
+byte and halts motor operation within < 500 ms, broadcasting an immediate 0x00 status 
+frame to all connected BLE software.
+
+================================================================================
+4. INBOUND CONTROL COMMANDS (Application -> Treadmill)
+================================================================================
+When connected in interactive mode (e.g., following virtual video terrain or 
+structured interval programs), the treadmill accepts incoming control frames.
+
+Supported Interactive Commands:
+- Target Speed Setpoint: Remote adjustments in 0.1 km/h steps to adapt workout 
+  intensity dynamically.
+- Target Incline Setpoint: Automatic tilt adjustments matching video grade changes 
+  in Kinomap / Sportstech Live.
+- System Execution Commands: Remote triggers for START, PAUSE, STOP, and reset 
+  operations.
+- Target Mode Setpoints: Pre-programmed targets for countdown workouts 
+  (Distance, Time, Calories).
