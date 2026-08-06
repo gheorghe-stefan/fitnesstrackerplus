@@ -1,6 +1,7 @@
 {
   "name": "fitnesstrackerplus",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "homepage": "https://stefangheorghe.net/fitnesstrackerplus",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.11.4",

@@ -1,4 +1,5 @@
-import { BluetoothLESensor, IBluetoothLESensor } from "./bluetooth/BluetoothLESensor";
+import { ISensor } from '../domain/ISensor';
+import { BluetoothLESensor } from "./bluetooth/BluetoothLESensor";
 import { HRBluetoothSensor } from "./bluetooth/BluetoothSensors";
 import VirtualSensors from "./VirtualSensors";
 
@@ -13,12 +14,11 @@ export class SensorManager
     {
         if (SensorManager.UseVirtualSensors)
         {
-            //this._HRSensor = new FakeHRSensor();
             this._HRSensor = VirtualSensors.HRSensor;
         }
         else
         {
-            let bluetoothDevice = await this.SearchDevice("heart_rate");
+            const bluetoothDevice = await this.SearchDevice("heart_rate");
             const bluetoothSensor = new BluetoothLESensor(bluetoothDevice, "heart_rate");
             this._HRSensor = new HRBluetoothSensor(bluetoothSensor);
         }
@@ -32,12 +32,4 @@ export class SensorManager
         const nativeDevice = await navigator.bluetooth.requestDevice({filters: [{services: [serviceUuid]}], optionalServices: optionalServices});
         return nativeDevice;
     }
-}
-
-export interface ISensor<Data>
-{
-    get name(): string;
-    onDisconnected: (() => void) | null;
-    start(notification: (data: Data) => void): Promise<void>
-    disconnect(): void;
 }

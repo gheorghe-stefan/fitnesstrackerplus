@@ -1,4 +1,4 @@
-import { ISensor } from "./SensorManager";
+import { ISensor } from "../domain/ISensor";
 
 export class VirtualSensor<T> implements ISensor<T>
 {
@@ -35,9 +35,5 @@ export class VirtualSensor<T> implements ISensor<T>
 
 export default abstract class VirtualSensors
 {
-    static HRSensor: VirtualSensor<number>;
-
-    static {
-        this.HRSensor = new VirtualSensor(70);
-    }
+    static HRSensor: VirtualSensor<number> = new VirtualSensor(70);
 }
