@@ -1,222 +1,116 @@
-import React, { useState } from 'react';
-import { SensorManager } from './sensors/SensorManager';
-import { AppBar, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Icon, IconButton, ThemeProvider, Toolbar, Tooltip, Typography, createTheme } from '@mui/material';
-import './App.css';
-import { HeartBroken } from '@mui/icons-material';
+import React, { useEffect, useState } from 'react';
+import { ThemeProvider, createTheme } from '@mui/material';
 import { saveAs } from 'file-saver';
+import { useHeartRateSensor } from './hooks/useHeartRateSensor';
+import { useRecorder } from './hooks/useRecorder';
+import { Header } from './components/Header';
+import { DataDisplay } from './components/DataDisplay';
+import { RecordingControls } from './components/RecordingControls';
+import { SaveDialog } from './components/SaveDialog';
+import { GpxExporter } from './services/GpxExporter';
+import { formatTime } from './services/TimeFormatter';
+import { RecordingState } from './domain/models';
+import './App.css';
 
-class AppState
-{
-  heartRateSensorName: string | null = null;
-  heartRate: number = 0;
-  isTreadmillConnected: boolean = false;
-  isHRConnected: boolean = false;
-  isRecording: boolean = false;
-  timer: number = 0;
-  hrData: number[] = [];
-  isDialogOpen: boolean = false; 
-}
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: { main: '#7cb342' },
+    error: { main: '#ef5350' },
+    background: { default: '#1a1a2e', paper: '#16213e' },
+  },
+  typography: {
+    fontFamily: "'Inter', 'Roboto', sans-serif",
+  },
+});
 
-class App extends React.Component<any, AppState>
-{
-  SensorManager : SensorManager = new SensorManager();
-  private intervalId: NodeJS.Timeout | null = null;
+const gpxExporter = new GpxExporter();
 
-  constructor(props: any)
-  {
-    super(props);
-    this.state = new AppState();
-    (window as any).setAppState = ((stateObject: any) => this.setState(stateObject));
-  }
+/**
+ * Root application shell — thin composition layer.
+ * Wires hooks (sensor, recorder) to presentational components.
+ * All business logic lives in hooks and services.
+ */
+const App: React.FC = () => {
+  const { sensorName, heartRate, isConnected, connect, disconnect } = useHeartRateSensor();
+  const {
+    recordingState, elapsedSeconds,
+    start, pause, resume, stop, reset,
+    getTrackPoints, setSensorData,
+  } = useRecorder();
+  const [dialogOpen, setDialogOpen] = useState(false);
 
-  async onSearchHRSensor()
-  {
-    var sensor = await this.SensorManager.SearchHRSensor();
-    this.setState({heartRateSensorName : sensor.name});
-    sensor.onDisconnected = this.clearHRData.bind(this);
-    await sensor.start(this.onHRDataReceived.bind(this));
+  // Keep sensor data ref up to date for the recorder's interval callback
+  useEffect(() => {
+    setSensorData({ hr: heartRate > 0 ? heartRate : undefined });
+  }, [heartRate, setSensorData]);
+
+  const handleStart = () => start();
+  const handlePause = () => pause();
+  const handleResume = () => resume();
+
+  const handleStop = () => {
+    stop();
+    setDialogOpen(true);
   };
 
-  disconnectHRSensor()
-  {
-    this.SensorManager.HRSensor?.disconnect();
-    this.clearHRData();
-  }
-
-  private onHRDataReceived(hr: number): void 
-  {
-    //this.Recorder.Values.HR = hr;
-    this.setState({heartRate: hr})
-  }
-  
-  private clearHRData() {
-    //this.Recorder.Values.HR = null;
-    this.setState(
-      {
-        heartRateSensorName: null,
-        heartRate: 0
-      });
-  }
-
-  private handleStartPause = () => {
-    this.setState((prevState) => {
-      if (prevState.isRecording) {
-        if (this.intervalId) {
-          clearInterval(this.intervalId);
-          this.intervalId = null;
-        }
-      } else {
-        this.intervalId = setInterval(() => {
-          this.setState((prevState) => ({
-            timer: prevState.timer + 1,
-            hrData: [...prevState.hrData, prevState.heartRate],
-          }));
-        }, 1000);
-      }
-      return { isRecording: !prevState.isRecording };
-    });
-  };
-  
-  private handleStop = () => {
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
-    }
-    this.setState({ isRecording: false, timer: 0 });
-    this.saveDataToFile(this.state.hrData);
-    this.setState({ hrData: [] });
-  };
-  
-  private saveDataToFile = (data: number[]) => {
-    const blob = new Blob([data.join('\n')], { type: 'text/plain;charset=utf-8' });
-    saveAs(blob, 'hr_data.txt');
-  };
-  
-  private formatTime = (seconds: number) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  const handleSave = () => {
+    const points = getTrackPoints();
+    const gpx = gpxExporter.export(points);
+    const blob = new Blob([gpx], { type: 'application/gpx+xml' });
+    const filename = `activity_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}.gpx`;
+    saveAs(blob, filename);
+    reset();
+    setDialogOpen(false);
   };
 
-  private handleDialogOpen = () => {
-    this.setState({ isDialogOpen: true });
+  const handleDiscard = () => {
+    reset();
+    setDialogOpen(false);
   };
 
-  private handleDialogClose = () => {
-    this.setState({ isDialogOpen: false });
-  };
-
-  private handleDialogConfirm = () => {
-    this.handleStop();
-    this.setState({ isDialogOpen: false });
-  };
-
-  setHRConnection(arg0: boolean): void
-  {
-    this.setState({ isHRConnected: arg0 });
-  }
-
-  setTreadmillConnection(arg0: boolean): void
-  {
-    this.setState({ isTreadmillConnected: arg0 });
-  }
-
-  private static readonly darkTheme = createTheme({
-    palette: {
-      mode: 'dark',
-      primary: {
-        main: '#91a47d',
-      },
-    },
-    components: {
-        MuiTextField: {
-            styleOverrides: {
-                root: {
-                    width: '7ch',
-                    margin: '1rem',
-                    fontSize: '2rem',
-                },
-
-            }
-        },
-    }
-  });
-
-  render()
-  {  
-    return (
-      <ThemeProvider theme={App.darkTheme}>
-        <div className="App">
-          <header className="App-header">
-            <div className="left-container">
-              <h1>FitnessTrackerPlus</h1>
-            </div>
-            <div className="right-container">
-            {this.state.heartRateSensorName == null ?
-                <Tooltip title="Connect a heart rate sensor">
-                  <IconButton className='button disconnected' sx={{marginRight: "0.5rem"}} onClick={this.onSearchHRSensor.bind(this)}>
-                    <HeartBroken sx={{transform: 'scale(1.2)'}} />
-                  </IconButton>
-                </Tooltip> :
-                <Tooltip title="Disconnect the heart rate sensor">
-                  <IconButton className='button' sx={{marginRight: "0.5rem"}} onClick={this.disconnectHRSensor.bind(this)}>
-                    <HeartBroken sx={{transform: 'scale(1.2)'}} />
-                  </IconButton>
-                </Tooltip>
-              }
-            </div>
-          </header>
-
-          <div className="App-content">
-            <section>
-              <table className="App-content-table">
-                <tbody>
-                  <tr>
-                    <td className="big-font">{this.state.heartRate} bpm</td>
-                    <td className="big-font">{this.state.heartRate / 2}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </section>
-            <div className="timer">
-                <h2>{this.formatTime(this.state.timer)}</h2>
-                <Button onClick={this.handleStartPause}>{this.state.isRecording ? 'Pause' : 'Start'}</Button>
-                <Button onClick={this.handleDialogOpen}>Stop</Button>
-              </div>
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <div className="App">
+        <Header
+          sensorName={sensorName}
+          onConnect={connect}
+          onDisconnect={disconnect}
+        />
+        <main className="App-content">
+          <DataDisplay
+            heartRate={heartRate}
+            isConnected={isConnected}
+            elapsedSeconds={elapsedSeconds}
+          />
+          <RecordingControls
+            recordingState={recordingState}
+            onStart={handleStart}
+            onPause={handlePause}
+            onResume={handleResume}
+            onStop={handleStop}
+          />
+        </main>
+        <footer className="App-footer">
+          <div className="footer-status">
+            {recordingState === RecordingState.Recording && (
+              <span className="recording-indicator">● REC</span>
+            )}
+            {recordingState === RecordingState.Paused && (
+              <span className="paused-indicator">❚❚ PAUSED</span>
+            )}
           </div>
-
-          <div className="App-footer">
-          <footer className="App-footer-group">
-            <IconButton>Settings</IconButton>
-          </footer>
-          </div>
-        </div>
-
-        <Dialog
-            open={this.state.isDialogOpen}
-            onClose={this.handleDialogClose}
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description"
-          >
-            <DialogTitle id="alert-dialog-title">{"Stop Recording?"}</DialogTitle>
-            <DialogContent>
-              <DialogContentText id="alert-dialog-description">
-                Are you sure you want to stop the recording and save the data?
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={this.handleDialogClose} color="primary">
-                No
-              </Button>
-              <Button onClick={this.handleDialogConfirm} color="primary" autoFocus>
-                Yes
-              </Button>
-            </DialogActions>
-          </Dialog>
-      </ThemeProvider>
-    );
-  }
-}
+        </footer>
+        <SaveDialog
+          open={dialogOpen}
+          trackPointCount={getTrackPoints().length}
+          elapsedTime={formatTime(elapsedSeconds)}
+          onSave={handleSave}
+          onDiscard={handleDiscard}
+        />
+      </div>
+    </ThemeProvider>
+  );
+};
 
 export default App;

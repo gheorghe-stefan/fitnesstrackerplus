@@ -1,10 +1,15 @@
-import { ISensor } from "../SensorManager";
+import { ISensor } from "../../domain/ISensor";
 import { IBluetoothLESensor } from "./BluetoothLESensor";
-import { BluetoothUtils } from "./BluetoothUtils";
 
 class BluetoothSensorBase
 {
-    public constructor(public bluetoothLESensor: IBluetoothLESensor) { }
+    public constructor(protected bluetoothLESensor: IBluetoothLESensor)
+    {
+        // Wire BLE-level disconnect events to the sensor-level callback
+        this.bluetoothLESensor.onDisconnected = () => {
+            this.onDisconnected?.();
+        };
+    }
 
     get name(): string { return this.bluetoothLESensor.name }
 
@@ -22,7 +27,6 @@ export class HRBluetoothSensor extends BluetoothSensorBase implements ISensor<nu
     {
         await this.bluetoothLESensor.start("heart_rate_measurement", data =>
         {
-            const flags = data.getUint8(0);
             const hr = data.getUint8(1);
             notification(hr);
         });
