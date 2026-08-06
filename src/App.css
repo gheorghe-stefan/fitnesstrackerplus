@@ -260,7 +260,7 @@ body {
 .App-footer {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   padding: 0.75rem 1.5rem;
   background: rgba(15, 15, 26, 0.6);
   backdrop-filter: blur(10px);
@@ -273,6 +273,13 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+.app-version {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  opacity: 0.6;
 }
 
 .recording-indicator {

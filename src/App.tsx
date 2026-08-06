@@ -100,6 +100,7 @@ const App: React.FC = () => {
               <span className="paused-indicator">❚❚ PAUSED</span>
             )}
           </div>
+          <span className="app-version">v{process.env.REACT_APP_VERSION}</span>
         </footer>
         <SaveDialog
           open={dialogOpen}
