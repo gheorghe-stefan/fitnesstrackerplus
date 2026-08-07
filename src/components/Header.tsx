@@ -28,6 +28,11 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="App-header">
       <div className="header-left">
+        <img
+          src={`${process.env.PUBLIC_URL}/logo.png`}
+          alt="FitnessTracker+ App Icon"
+          className="app-header-logo-icon"
+        />
         <h1 className="App-title-logo">FitnessTracker<span className="title-plus">+</span></h1>
       </div>
       <div className="header-right">

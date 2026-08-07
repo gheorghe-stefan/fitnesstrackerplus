@@ -13,7 +13,7 @@ export interface DataDisplayProps {
 
 /**
  * Displays live sensor metrics, activity timer, and elevation gain.
- * Glassmorphism cards with glowing accent when sensor data is active.
+ * Glassmorphism cards structured in a clean 2-column grid.
  */
 export const DataDisplay: React.FC<DataDisplayProps> = ({
   heartRate,
