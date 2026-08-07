@@ -35,7 +35,7 @@ export class TcxExporter implements IActivityExporter {
 
       if (i > 0) {
         const dtSec = (tp.timestamp.getTime() - trackPoints[i - 1].timestamp.getTime()) / 1000;
-        if (dtSec > 0 && tp.speed && tp.speed > 0) {
+        if (dtSec > 0 && dtSec <= 5 && tp.speed && tp.speed > 0) {
           cumulativeDistanceMeters += (tp.speed / 3.6) * dtSec;
         }
       }

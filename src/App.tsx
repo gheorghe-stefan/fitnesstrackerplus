@@ -43,12 +43,11 @@ const App: React.FC = () => {
   } = useTreadmillSensor();
 
   const {
-    recordingState, elapsedSeconds,
+    recordingState, elapsedSeconds, elevationGain,
     start, pause, resume, stop, reset,
     getTrackPoints, setSensorData,
   } = useRecorder();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [currentElevation, setCurrentElevation] = useState(755.0);
 
   // Keep combined sensor data ref up to date for the recorder's interval callback
   useEffect(() => {
@@ -60,24 +59,14 @@ const App: React.FC = () => {
     const speed = isTreadmillConnected ? treadmillData.speed : 0;
     const inclination = isTreadmillConnected ? treadmillData.inclination : 4.5;
 
-    let ele = currentElevation;
-    if (recordingState === RecordingState.Recording && speed > 0) {
-      const stepDistanceMeters = (speed / 3.6) * 1;
-      const stepElevationGainMeters = stepDistanceMeters * (inclination / 100);
-      ele = Number((currentElevation + stepElevationGainMeters).toFixed(2));
-      setCurrentElevation(ele);
-    }
-
     setSensorData({
       hr: effectiveHr,
       speed: isTreadmillConnected ? speed : undefined,
       inclination: isTreadmillConnected ? inclination : undefined,
-      ele,
     });
-  }, [heartRate, isConnected, treadmillData, isTreadmillConnected, recordingState, currentElevation, setSensorData]);
+  }, [heartRate, isConnected, treadmillData, isTreadmillConnected, setSensorData]);
 
   const handleStart = () => {
-    setCurrentElevation(755.0);
     start();
   };
   const handlePause = () => pause();
@@ -95,13 +84,11 @@ const App: React.FC = () => {
     const filename = `activity_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}.${defaultExporter.extension}`;
     saveAs(blob, filename);
     reset();
-    setCurrentElevation(755.0);
     setDialogOpen(false);
   };
 
   const handleDiscard = () => {
     reset();
-    setCurrentElevation(755.0);
     setDialogOpen(false);
   };
 
@@ -123,7 +110,7 @@ const App: React.FC = () => {
             elapsedSeconds={elapsedSeconds}
             treadmillData={treadmillData}
             isTreadmillConnected={isTreadmillConnected}
-            elevationGain={Number((currentElevation - 755.0).toFixed(1))}
+            elevationGain={elevationGain}
           />
           <RecordingControls
             recordingState={recordingState}
