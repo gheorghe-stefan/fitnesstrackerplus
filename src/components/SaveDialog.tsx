@@ -19,7 +19,7 @@ export interface SaveDialogProps {
 
 /**
  * Confirmation dialog shown after stopping a recording.
- * Offers Save (export GPX) or Discard (throw away data).
+ * Offers Save (export TCX) or Discard (throw away data).
  */
 export const SaveDialog: React.FC<SaveDialogProps> = ({
   open,
@@ -39,7 +39,7 @@ export const SaveDialog: React.FC<SaveDialogProps> = ({
       <DialogContent>
         <DialogContentText id="save-dialog-description">
           You recorded <strong>{trackPointCount}</strong> data point{trackPointCount !== 1 ? 's' : ''} over{' '}
-          <strong>{elapsedTime}</strong>. Would you like to save this activity as a GPX file?
+          <strong>{elapsedTime}</strong>. Would you like to save this activity as a TCX file?
         </DialogContentText>
       </DialogContent>
       <DialogActions>
@@ -47,7 +47,7 @@ export const SaveDialog: React.FC<SaveDialogProps> = ({
           Discard
         </Button>
         <Button onClick={onSave} color="primary" variant="contained" startIcon={<Save />} autoFocus id="btn-save">
-          Save GPX
+          Save TCX
         </Button>
       </DialogActions>
     </Dialog>
