@@ -68,7 +68,7 @@ describe('FTMSTreadmillDataParser', () => {
       const flags = 0x058c;
       const speedRaw = 1250; // 12.50 km/h
       const distRaw = 2500; // 2500 meters (uint24: 0xC4, 0x09, 0x00)
-      const inclineRaw = 25; // Level 5 (raw 25 = 5 * 5) -> 7.5%
+      const inclineRaw = 50; // Level 5 (raw 50 = 5 * 10) -> 7.5%
       const rampAngle = 0;
       const caloriesRaw = 185; // 185 kcal
       const hrRaw = 145; // 145 bpm

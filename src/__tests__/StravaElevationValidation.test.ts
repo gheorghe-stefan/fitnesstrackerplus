@@ -40,7 +40,7 @@ function runParameterizedTcxTest(testCase: ParameterizedWorkoutTestCase, index: 
   });
 
   for (const seg of testCase.segments) {
-    const inclinePercent = SportstechF37sProfile.parseIncline(seg.inclineLevel * 5).inclinationPercent;
+    const inclinePercent = SportstechF37sProfile.parseIncline(seg.inclineLevel * 10).inclinationPercent;
 
     for (let s = 1; s <= seg.durationSeconds; s++) {
       if (totalCalculatedDistance >= testCase.expectedTotalDistanceMeters) {

@@ -36,7 +36,7 @@ export const DataDisplay: React.FC<DataDisplayProps> = ({
     : '';
 
   const distanceKmDisplay = isTreadmillConnected && treadmillData
-    ? (treadmillData.distance / 1000).toFixed(2)
+    ? (Math.floor(treadmillData.distance / 10) / 100).toFixed(2)
     : '--';
 
   const caloriesDisplay = isTreadmillConnected && treadmillData

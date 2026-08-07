@@ -9,20 +9,20 @@ export interface ITreadmillProfile {
 
 /**
  * Sportstech F37s Profile:
- * - Hardware transmits incline as half-step levels (e.g., Level 15 = 30, Level 10 = 20)
+ * - Hardware transmits incline as rawInc = Level * 10 (e.g. Level 0 = 0, Level 1 = 10, Level 15 = 150)
  * - Physical grade starts at 4.5% (Level 0) and scales from 6.3% to 10.5% (Levels 1..15)
  */
 export const SportstechF37sProfile: ITreadmillProfile = {
   id: 'sportstech_f37s',
   name: 'Sportstech F37s',
   parseIncline(rawInc: number) {
-    // Sportstech F37s hardware transmits incline scaled by 5 (each level = 5 units):
-    // Level 0  -> rawInc = 0   (0 / 5 = 0)  -> 4.5%
-    // Level 1  -> rawInc = 5   (5 / 5 = 1)  -> 6.3%
-    // Level 2  -> rawInc = 10  (10 / 5 = 2) -> 6.6%
-    // Level 8  -> rawInc = 40  (40 / 5 = 8) -> 8.4%
-    // Level 15 -> rawInc = 75  (75 / 5 = 15)-> 10.5%
-    const level = rawInc / 5;
+    // Sportstech F37s hardware transmits rawInc = Level * 10:
+    // Level 0  -> rawInc = 0   (0 / 10 = 0)   -> 4.5%
+    // Level 1  -> rawInc = 10  (10 / 10 = 1)  -> 6.3%
+    // Level 2  -> rawInc = 20  (20 / 10 = 2)  -> 6.6%
+    // Level 8  -> rawInc = 80  (80 / 10 = 8)  -> 8.4%
+    // Level 15 -> rawInc = 150 (150 / 10 = 15) -> 10.5%
+    const level = rawInc / 10;
     const clampedLevel = Math.max(0, Math.min(15, Math.round(level)));
     const percent = clampedLevel <= 0 ? 4.5 : Number((6.0 + clampedLevel * 0.3).toFixed(1));
     return { rawLevel: clampedLevel, inclinationPercent: percent };
