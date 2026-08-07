@@ -1,31 +1,48 @@
 import React from 'react';
 import { IconButton, Tooltip } from '@mui/material';
-import { Favorite, HeartBroken } from '@mui/icons-material';
+import { Favorite, HeartBroken, FitnessCenter } from '@mui/icons-material';
 
 export interface HeaderProps {
   sensorName: string | null;
   onConnect: () => void;
   onDisconnect: () => void;
+  treadmillName?: string | null;
+  onConnectTreadmill?: () => void;
+  onDisconnectTreadmill?: () => void;
 }
 
 /**
- * App header with title and HR sensor connect/disconnect button.
- * Shows a pulsing heart icon when connected, broken heart when disconnected.
+ * App header with title, HR sensor, and Treadmill connect/disconnect buttons.
  */
-export const Header: React.FC<HeaderProps> = ({ sensorName, onConnect, onDisconnect }) => {
-  const isConnected = sensorName !== null;
+export const Header: React.FC<HeaderProps> = ({
+  sensorName,
+  onConnect,
+  onDisconnect,
+  treadmillName = null,
+  onConnectTreadmill,
+  onDisconnectTreadmill,
+}) => {
+  const isHrConnected = sensorName !== null;
+  const isTreadmillConnected = treadmillName !== null;
 
   return (
     <header className="App-header">
       <div className="header-left">
+        <img
+          src={`${process.env.PUBLIC_URL}/logo.png`}
+          alt="FitnessTracker+ App Icon"
+          className="app-header-logo-icon"
+        />
         <h1 className="App-title-logo">FitnessTracker<span className="title-plus">+</span></h1>
       </div>
       <div className="header-right">
-        {isConnected && (
+
+        {/* Heart Rate Sensor Control */}
+        {isHrConnected && (
           <span className="sensor-name">{sensorName}</span>
         )}
-        {isConnected ? (
-          <Tooltip title={`Disconnect ${sensorName}`}>
+        {isHrConnected ? (
+          <Tooltip title={`Disconnect HR (${sensorName})`}>
             <IconButton className="button hr-button connected" onClick={onDisconnect} id="btn-hr-disconnect">
               <Favorite className="hr-icon pulse" />
             </IconButton>
@@ -36,6 +53,36 @@ export const Header: React.FC<HeaderProps> = ({ sensorName, onConnect, onDisconn
               <HeartBroken className="hr-icon" />
             </IconButton>
           </Tooltip>
+        )}
+
+        {/* Treadmill Sensor Control */}
+        {onConnectTreadmill && onDisconnectTreadmill && (
+          <>
+            {isTreadmillConnected && (
+              <span className="sensor-name treadmill-name">{treadmillName}</span>
+            )}
+            {isTreadmillConnected ? (
+              <Tooltip title={`Disconnect Treadmill (${treadmillName})`}>
+                <IconButton
+                  className="button treadmill-button connected"
+                  onClick={onDisconnectTreadmill}
+                  id="btn-treadmill-disconnect"
+                >
+                  <FitnessCenter className="treadmill-icon active" />
+                </IconButton>
+              </Tooltip>
+            ) : (
+              <Tooltip title="Connect treadmill (FTMS)">
+                <IconButton
+                  className="button treadmill-button disconnected"
+                  onClick={onConnectTreadmill}
+                  id="btn-treadmill-connect"
+                >
+                  <FitnessCenter className="treadmill-icon" />
+                </IconButton>
+              </Tooltip>
+            )}
+          </>
         )}
       </div>
     </header>

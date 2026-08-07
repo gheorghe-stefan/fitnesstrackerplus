@@ -32,11 +32,51 @@ export class BluetoothLESensor implements IBluetoothLESensor
             console.log('Connecting to GATT Server...');
             const server = await this.nativeDevice.gatt?.connect();
     
-            console.log('Getting Service...');
-            const service = await server?.getPrimaryService(this.serviceUuid);
+            console.log('Getting Service for ' + this.serviceUuid);
+            let service: BluetoothRemoteGATTService | undefined;
+            try {
+                service = await server?.getPrimaryService(this.serviceUuid);
+            } catch (err) {
+                console.warn(`Could not get primary service '${this.serviceUuid}', trying fallback UUIDs...`, err);
+                if (this.serviceUuid === "fitness_machine" || this.serviceUuid === "0x1826") {
+                    try {
+                        service = await server?.getPrimaryService(0x1826);
+                    } catch {
+                        service = await server?.getPrimaryService("00001826-0000-1000-8000-00805f9b34fb");
+                    }
+                } else if (this.serviceUuid === "heart_rate" || this.serviceUuid === "0x180D") {
+                    try {
+                        service = await server?.getPrimaryService(0x180d);
+                    } catch {
+                        service = await server?.getPrimaryService("0000180d-0000-1000-8000-00805f9b34fb");
+                    }
+                } else {
+                    throw err;
+                }
+            }
             
-            console.log('Getting Characteristic...');
-            const myCharacteristic = await service?.getCharacteristic(characteristic);
+            console.log('Getting Characteristic for ' + characteristic);
+            let myCharacteristic: BluetoothRemoteGATTCharacteristic | undefined;
+            try {
+                myCharacteristic = await service?.getCharacteristic(characteristic);
+            } catch (err) {
+                console.warn(`Could not get characteristic '${characteristic}', trying fallback UUIDs...`, err);
+                if (characteristic === "0x2acd" || characteristic === "treadmill_data") {
+                    try {
+                        myCharacteristic = await service?.getCharacteristic(0x2acd);
+                    } catch {
+                        myCharacteristic = await service?.getCharacteristic("00002acd-0000-1000-8000-00805f9b34fb");
+                    }
+                } else if (characteristic === "heart_rate_measurement" || characteristic === "0x2a37") {
+                    try {
+                        myCharacteristic = await service?.getCharacteristic(0x2a37);
+                    } catch {
+                        myCharacteristic = await service?.getCharacteristic("00002a37-0000-1000-8000-00805f9b34fb");
+                    }
+                } else {
+                    throw err;
+                }
+            }
 
             console.log("Starting notifications...");
             await myCharacteristic?.startNotifications();
@@ -45,16 +85,15 @@ export class BluetoothLESensor implements IBluetoothLESensor
 
             myCharacteristic?.addEventListener('characteristicvaluechanged', (event: Event) => 
             {
-                //console.log(event);
                 var data = (event.target as BluetoothRemoteGATTCharacteristic)?.value;
-                //console.log(data);  
                 if (data != null)
                     valueChangedCallback(data);
             });
         }
-        catch
+        catch (error)
         {
-            console.log("There was a problem listening this Sensor for " + characteristic);
+            console.error("There was a problem listening this Sensor for " + characteristic, error);
+            throw error;
         }
     }
 

@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material';
 import { saveAs } from 'file-saver';
 import { useHeartRateSensor } from './hooks/useHeartRateSensor';
+import { useTreadmillSensor } from './hooks/useTreadmillSensor';
 import { useRecorder } from './hooks/useRecorder';
 import { Header } from './components/Header';
 import { DataDisplay } from './components/DataDisplay';
 import { RecordingControls } from './components/RecordingControls';
 import { SaveDialog } from './components/SaveDialog';
-import { GpxExporter } from './services/GpxExporter';
+import { TcxExporter } from './services/TcxExporter';
 import { formatTime } from './services/TimeFormatter';
 import { RecordingState } from './domain/models';
 import './App.css';
@@ -24,28 +25,50 @@ const darkTheme = createTheme({
   },
 });
 
-const gpxExporter = new GpxExporter();
+const defaultExporter = new TcxExporter();
 
 /**
  * Root application shell — thin composition layer.
- * Wires hooks (sensor, recorder) to presentational components.
+ * Wires sensors and recorder to presentational components.
  * All business logic lives in hooks and services.
  */
 const App: React.FC = () => {
   const { sensorName, heartRate, isConnected, connect, disconnect } = useHeartRateSensor();
   const {
-    recordingState, elapsedSeconds,
+    treadmillName,
+    treadmillData,
+    isTreadmillConnected,
+    connectTreadmill,
+    disconnectTreadmill,
+  } = useTreadmillSensor();
+
+  const {
+    recordingState, elapsedSeconds, elevationGain,
     start, pause, resume, stop, reset,
     getTrackPoints, setSensorData,
   } = useRecorder();
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Keep sensor data ref up to date for the recorder's interval callback
+  // Keep combined sensor data ref up to date for the recorder's interval callback
   useEffect(() => {
-    setSensorData({ hr: heartRate > 0 ? heartRate : undefined });
-  }, [heartRate, setSensorData]);
+    // HR priority: standalone HR sensor first, treadmill HR fallback
+    const effectiveHr = isConnected && heartRate > 0
+      ? heartRate
+      : (isTreadmillConnected && treadmillData.heartRate > 0 ? treadmillData.heartRate : undefined);
 
-  const handleStart = () => start();
+    const speed = isTreadmillConnected ? treadmillData.speed : 0;
+    const inclination = isTreadmillConnected ? treadmillData.inclination : 4.5;
+
+    setSensorData({
+      hr: effectiveHr,
+      speed: isTreadmillConnected ? speed : undefined,
+      inclination: isTreadmillConnected ? inclination : undefined,
+    });
+  }, [heartRate, isConnected, treadmillData, isTreadmillConnected, setSensorData]);
+
+  const handleStart = () => {
+    start();
+  };
   const handlePause = () => pause();
   const handleResume = () => resume();
 
@@ -56,9 +79,9 @@ const App: React.FC = () => {
 
   const handleSave = () => {
     const points = getTrackPoints();
-    const gpx = gpxExporter.export(points);
-    const blob = new Blob([gpx], { type: 'application/gpx+xml' });
-    const filename = `activity_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}.gpx`;
+    const tcxContent = defaultExporter.export(points);
+    const blob = new Blob([tcxContent], { type: defaultExporter.mimeType });
+    const filename = `activity_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}.${defaultExporter.extension}`;
     saveAs(blob, filename);
     reset();
     setDialogOpen(false);
@@ -76,12 +99,18 @@ const App: React.FC = () => {
           sensorName={sensorName}
           onConnect={connect}
           onDisconnect={disconnect}
+          treadmillName={treadmillName}
+          onConnectTreadmill={connectTreadmill}
+          onDisconnectTreadmill={disconnectTreadmill}
         />
         <main className="App-content">
           <DataDisplay
             heartRate={heartRate}
             isConnected={isConnected}
             elapsedSeconds={elapsedSeconds}
+            treadmillData={treadmillData}
+            isTreadmillConnected={isTreadmillConnected}
+            elevationGain={elevationGain}
           />
           <RecordingControls
             recordingState={recordingState}

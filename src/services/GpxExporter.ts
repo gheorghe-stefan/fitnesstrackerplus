@@ -6,6 +6,9 @@ import { TrackPoint } from '../domain/models';
  * Supports HR and speed data via Garmin TrackPointExtension/v1.
  */
 export class GpxExporter implements IGpxExporter {
+  public readonly extension = 'gpx';
+  public readonly mimeType = 'application/gpx+xml';
+
   export(trackPoints: ReadonlyArray<TrackPoint>, activityName?: string): string {
     const name = activityName ?? `Activity ${new Date().toISOString().slice(0, 10)}`;
     const time = trackPoints.length > 0
@@ -23,10 +26,12 @@ export class GpxExporter implements IGpxExporter {
      creator="FitnessTrackerPlus">
   <metadata>
     <name>${this.escapeXml(name)}</name>
+    <desc>Powered by FitnessTracker+</desc>
     <time>${time}</time>
   </metadata>
   <trk>
     <name>${this.escapeXml(name)}</name>
+    <desc>Powered by FitnessTracker+</desc>
     <trkseg>
 ${trkpts}
     </trkseg>
@@ -35,11 +40,12 @@ ${trkpts}
   }
 
   private formatTrackPoint(tp: TrackPoint): string {
-    const lat = tp.lat ?? 0;
-    const lon = tp.lon ?? 0;
+    const lat = 0;
+    const lon = 0;
+    const eleTag = tp.ele !== undefined ? `\n        <ele>${tp.ele}</ele>` : '';
     const extensions = this.formatExtensions(tp);
 
-    return `      <trkpt lat="${lat}" lon="${lon}">
+    return `      <trkpt lat="${lat}" lon="${lon}">${eleTag}
         <time>${tp.timestamp.toISOString()}</time>${extensions}
       </trkpt>`;
   }
@@ -49,9 +55,6 @@ ${trkpts}
 
     if (tp.hr !== undefined) {
       extensionFields.push(`            <gpxtpx:hr>${tp.hr}</gpxtpx:hr>`);
-    }
-    if (tp.speed !== undefined) {
-      extensionFields.push(`            <gpxtpx:speed>${tp.speed}</gpxtpx:speed>`);
     }
 
     if (extensionFields.length === 0) return '';
