@@ -1,9 +1,7 @@
-import { TrackPoint } from './models';
+import { IActivityExporter } from './IActivityExporter';
 
 /**
  * Interface for exporting track points to GPX format.
- * Decoupled from recording logic to allow alternative exporters (TCX, FIT, etc.).
+ * Extends common IActivityExporter interface.
  */
-export interface IGpxExporter {
-  export(trackPoints: ReadonlyArray<TrackPoint>, activityName?: string): string;
-}
+export interface IGpxExporter extends IActivityExporter {}

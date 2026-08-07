@@ -8,10 +8,11 @@ export interface DataDisplayProps {
   elapsedSeconds: number;
   treadmillData?: TreadmillData;
   isTreadmillConnected?: boolean;
+  elevationGain?: number;
 }
 
 /**
- * Displays live sensor metrics and the activity timer.
+ * Displays live sensor metrics, activity timer, and elevation gain.
  * Glassmorphism cards with glowing accent when sensor data is active.
  */
 export const DataDisplay: React.FC<DataDisplayProps> = ({
@@ -20,6 +21,7 @@ export const DataDisplay: React.FC<DataDisplayProps> = ({
   elapsedSeconds,
   treadmillData,
   isTreadmillConnected = false,
+  elevationGain = 0.0,
 }) => {
   const speedDisplay = isTreadmillConnected && treadmillData
     ? treadmillData.speed.toFixed(1)
@@ -40,6 +42,10 @@ export const DataDisplay: React.FC<DataDisplayProps> = ({
   const caloriesDisplay = isTreadmillConnected && treadmillData
     ? treadmillData.calories.toString()
     : '--';
+
+  const elevationDisplay = elevationGain > 0
+    ? `+${elevationGain.toFixed(1)}`
+    : '+0.0';
 
   return (
     <div className="data-display">
@@ -74,6 +80,17 @@ export const DataDisplay: React.FC<DataDisplayProps> = ({
           </span>
         </div>
         {inclineLevelSub && <div className="metric-sublabel">{inclineLevelSub}</div>}
+      </div>
+
+      {/* Elevation Gain Card */}
+      <div className="metric-card elevation-card">
+        <div className="metric-label">Elevation Gain</div>
+        <div className="metric-value-container">
+          <span className={`metric-value elevation-value ${elevationGain > 0 ? 'active' : ''}`}>
+            {elevationDisplay}
+          </span>
+          <span className="metric-unit">m</span>
+        </div>
       </div>
 
       {/* Duration Card */}

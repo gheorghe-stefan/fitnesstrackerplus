@@ -8,8 +8,6 @@ export interface TrackPoint {
   readonly hr?: number;
   readonly speed?: number;
   readonly inclination?: number;
-  readonly lat?: number;
-  readonly lon?: number;
   readonly ele?: number;
 }
 

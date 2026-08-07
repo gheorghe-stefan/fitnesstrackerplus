@@ -124,25 +124,6 @@ body {
   50% { transform: scale(1.25); }
 }
 
-/* ===== GPS BUTTON ===== */
-.gps-button {
-  width: 48px !important;
-  height: 48px !important;
-  border-radius: 50% !important;
-  background: rgba(255, 255, 255, 0.08) !important;
-  border: 1px solid var(--border-subtle) !important;
-  transition: all 0.3s ease !important;
-}
-
-.gps-button:hover {
-  background: rgba(255, 255, 255, 0.15) !important;
-  border-color: rgba(255, 255, 255, 0.25) !important;
-}
-
-.gps-icon {
-  color: var(--text-secondary) !important;
-  font-size: 1.4rem !important;
-}
 
 /* ===== TREADMILL BUTTON ===== */
 .treadmill-button {
@@ -257,6 +238,11 @@ body {
 .calories-value.active {
   color: #4fc3f7;
   text-shadow: 0 0 24px rgba(2, 136, 209, 0.4);
+}
+
+.elevation-value.active {
+  color: #81c784;
+  text-shadow: 0 0 24px rgba(129, 199, 132, 0.4);
 }
 
 .metric-sublabel {

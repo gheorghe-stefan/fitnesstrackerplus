@@ -6,6 +6,9 @@ import { TrackPoint } from '../domain/models';
  * Supports HR and speed data via Garmin TrackPointExtension/v1.
  */
 export class GpxExporter implements IGpxExporter {
+  public readonly extension = 'gpx';
+  public readonly mimeType = 'application/gpx+xml';
+
   export(trackPoints: ReadonlyArray<TrackPoint>, activityName?: string): string {
     const name = activityName ?? `Activity ${new Date().toISOString().slice(0, 10)}`;
     const time = trackPoints.length > 0
