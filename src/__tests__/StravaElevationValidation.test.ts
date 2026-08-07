@@ -88,7 +88,7 @@ function runParameterizedTcxTest(testCase: ParameterizedWorkoutTestCase, index: 
   expect(tcxXml).toContain('<AltitudeMeters>');
   expect(tcxXml).toContain('<HeartRateBpm>');
 
-  // Write TCX file to src/__tests__/gen directory for manual Strava upload testing
+  // Write TCX file to temp gen directory for test file verification
   const genDir = path.join(__dirname, 'gen');
   if (!fs.existsSync(genDir)) {
     fs.mkdirSync(genDir, { recursive: true });
@@ -97,7 +97,21 @@ function runParameterizedTcxTest(testCase: ParameterizedWorkoutTestCase, index: 
   const tcxPath = path.join(genDir, `${testCase.baseFilename}.tcx`);
   fs.writeFileSync(tcxPath, tcxXml, 'utf-8');
 
-  return { actualDistance, actualGain, tcxPath };
+  // Verify generated file exists and is non-empty
+  expect(fs.existsSync(tcxPath)).toBe(true);
+  expect(fs.statSync(tcxPath).size).toBeGreaterThan(0);
+
+  // Clean up / remove generated file after checking
+  if (fs.existsSync(tcxPath)) {
+    fs.unlinkSync(tcxPath);
+  }
+
+  // Remove gen directory if empty
+  if (fs.existsSync(genDir) && fs.readdirSync(genDir).length === 0) {
+    fs.rmdirSync(genDir);
+  }
+
+  return { actualDistance, actualGain };
 }
 
 describe('Parameterized Strava Elevation TCX Test Suite', () => {
@@ -140,8 +154,7 @@ describe('Parameterized Strava Elevation TCX Test Suite', () => {
 
   testCases.forEach((testCase, index) => {
     it(`validates and exports TCX: ${testCase.name}`, () => {
-      const { actualDistance, actualGain, tcxPath } = runParameterizedTcxTest(testCase, index);
-      expect(fs.existsSync(tcxPath)).toBe(true);
+      const { actualDistance, actualGain } = runParameterizedTcxTest(testCase, index);
       expect(actualDistance).toBeGreaterThan(0);
       expect(actualGain).toBeGreaterThan(0);
     });

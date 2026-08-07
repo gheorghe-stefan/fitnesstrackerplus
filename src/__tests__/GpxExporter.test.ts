@@ -41,14 +41,6 @@ describe('GpxExporter', () => {
     expect(gpx).toContain('<gpxtpx:hr>72</gpxtpx:hr>');
   });
 
-  it('should handle track points with lat/lon', () => {
-    const trackPoints: TrackPoint[] = [
-      { timestamp: new Date('2025-01-01T10:00:00Z'), lat: 47.5, lon: 19.08, hr: 120 },
-    ];
-    const gpx = exporter.export(trackPoints);
-    expect(gpx).toContain('lat="47.5" lon="19.08"');
-  });
-
   it('should handle multiple track points', () => {
     const trackPoints: TrackPoint[] = [
       { timestamp: new Date('2025-01-01T10:00:00Z'), hr: 70 },

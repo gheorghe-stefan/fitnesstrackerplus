@@ -13,20 +13,12 @@ export class TcxExporter implements IActivityExporter {
   public readonly extension = 'tcx';
   public readonly mimeType = 'application/vnd.garmin.tcx+xml';
 
-  /**
-   * @param includeGpsPosition Whether to render GPS <Position> tags.
-   * Defaults to false (Pure Indoor Mode) so Strava reads exact treadmill <AltitudeMeters>
-   * without applying DEM map-matching overrides or 0m sea level clipping.
-   */
-  constructor(private readonly includeGpsPosition: boolean = false) {}
-
   export(trackPoints: ReadonlyArray<TrackPoint>, activityName?: string): string {
     const startTime = trackPoints.length > 0
       ? trackPoints[0].timestamp.toISOString()
       : new Date().toISOString();
 
     let totalTimeSeconds = 0;
-    let totalDistanceMeters = 0;
 
     if (trackPoints.length > 1) {
       const startMs = trackPoints[0].timestamp.getTime();
@@ -86,21 +78,13 @@ ${formattedTrackpoints.join('\n')}
     const ele = tp.ele !== undefined ? tp.ele.toFixed(2) : '0.00';
     const dist = cumulativeDistanceMeters.toFixed(4);
 
-    const positionBlock = (this.includeGpsPosition && tp.lat !== undefined && tp.lon !== undefined)
-      ? `
-            <Position>
-              <LatitudeDegrees>${tp.lat}</LatitudeDegrees>
-              <LongitudeDegrees>${tp.lon}</LongitudeDegrees>
-            </Position>`
-      : '';
-
     const hrBlock = tp.hr !== undefined ? `
             <HeartRateBpm>
               <Value>${Math.round(tp.hr)}</Value>
             </HeartRateBpm>` : '';
 
     return `          <Trackpoint>
-            <Time>${tp.timestamp.toISOString()}</Time>${positionBlock}
+            <Time>${tp.timestamp.toISOString()}</Time>
             <AltitudeMeters>${ele}</AltitudeMeters>
             <DistanceMeters>${dist}</DistanceMeters>${hrBlock}
           </Trackpoint>`;

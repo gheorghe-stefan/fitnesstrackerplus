@@ -31,10 +31,10 @@ describe('TcxExporter', () => {
     expect(tcx).toContain('<Notes>Morning Treadmill Run - Powered by FitnessTracker+</Notes>');
   });
 
-  it('omits Position tag in default Pure Indoor Mode', () => {
+  it('formats Trackpoints with Time, AltitudeMeters, DistanceMeters, and HeartRateBpm', () => {
     const trackPoints: TrackPoint[] = [
-      { timestamp: new Date('2026-08-07T10:00:00Z'), lat: 47.386254, lon: 9.518632, ele: 755.0, hr: 140, speed: 10.0 },
-      { timestamp: new Date('2026-08-07T10:00:01Z'), lat: 47.386260, lon: 9.518640, ele: 755.35, hr: 145, speed: 10.0 },
+      { timestamp: new Date('2026-08-07T10:00:00Z'), ele: 755.0, hr: 140, speed: 10.0 },
+      { timestamp: new Date('2026-08-07T10:00:01Z'), ele: 755.35, hr: 145, speed: 10.0 },
     ];
 
     const tcx = exporter.export(trackPoints);
@@ -45,19 +45,6 @@ describe('TcxExporter', () => {
     expect(tcx).toContain('<DistanceMeters>0.0000</DistanceMeters>');
     expect(tcx).toContain('<DistanceMeters>2.7778</DistanceMeters>');
     expect(tcx).toContain('<Value>140</Value>');
-  });
-
-  it('renders Position tag when includeGpsPosition is true', () => {
-    const gpsExporter = new TcxExporter(true);
-    const trackPoints: TrackPoint[] = [
-      { timestamp: new Date('2026-08-07T10:00:00Z'), lat: 47.386254, lon: 9.518632, ele: 755.0, hr: 140, speed: 10.0 },
-    ];
-
-    const tcx = gpsExporter.export(trackPoints);
-
-    expect(tcx).toContain('<Position>');
-    expect(tcx).toContain('<LatitudeDegrees>47.386254</LatitudeDegrees>');
-    expect(tcx).toContain('<LongitudeDegrees>9.518632</LongitudeDegrees>');
   });
 
   it('escapes XML special characters in activity name', () => {
