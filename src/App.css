@@ -168,6 +168,48 @@ body {
   color: #4fc3f7;
 }
 
+/* ===== STRAVA HEADER CONTROL ===== */
+.strava-header-control {
+  display: flex;
+  align-items: center;
+}
+
+.strava-connect-btn-wrapper {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: opacity 0.3s;
+}
+
+.strava-connect-btn-wrapper:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.strava-connect-btn {
+  height: 36px;
+  border-radius: 4px; /* Corner transparency handling */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
+}
+
+.strava-connect-btn:hover {
+  transform: scale(1.05);
+}
+
+.strava-connect-btn.connecting {
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.strava-name {
+  background: rgba(252, 82, 0, 0.15);
+  border-color: rgba(252, 82, 0, 0.35);
+  color: #fc5200;
+}
+
 /* ===== MAIN CONTENT ===== */
 .App-content {
   flex: 1;
