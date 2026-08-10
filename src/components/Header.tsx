@@ -1,6 +1,8 @@
 import React from 'react';
-import { IconButton, Tooltip } from '@mui/material';
+import { IconButton, Tooltip, Button } from '@mui/material';
 import { Favorite, HeartBroken, FitnessCenter } from '@mui/icons-material';
+import { StravaAuthentication } from '../strava/StravaModels';
+import stravaConnectBtn from '../assets/strava/btn_connect_orange.png';
 
 export interface HeaderProps {
   sensorName: string | null;
@@ -9,6 +11,10 @@ export interface HeaderProps {
   treadmillName?: string | null;
   onConnectTreadmill?: () => void;
   onDisconnectTreadmill?: () => void;
+  stravaAuth?: StravaAuthentication | null;
+  onConnectStrava?: () => void;
+  onDisconnectStrava?: () => void;
+  isStravaConnecting?: boolean;
 }
 
 /**
@@ -21,6 +27,10 @@ export const Header: React.FC<HeaderProps> = ({
   treadmillName = null,
   onConnectTreadmill,
   onDisconnectTreadmill,
+  stravaAuth,
+  onConnectStrava,
+  onDisconnectStrava,
+  isStravaConnecting = false,
 }) => {
   const isHrConnected = sensorName !== null;
   const isTreadmillConnected = treadmillName !== null;
@@ -36,6 +46,41 @@ export const Header: React.FC<HeaderProps> = ({
         <h1 className="App-title-logo">FitnessTracker<span className="title-plus">+</span></h1>
       </div>
       <div className="header-right">
+
+        {/* Strava Control */}
+        {onConnectStrava && onDisconnectStrava && (
+          <div className="strava-header-control">
+            {stravaAuth ? (
+              <>
+                <span className="sensor-name strava-name">
+                  Strava: {stravaAuth.athlete.firstname}
+                </span>
+                <Button 
+                  size="small" 
+                  color="inherit" 
+                  variant="outlined" 
+                  onClick={onDisconnectStrava}
+                  sx={{ ml: 1, borderColor: '#fc5200', color: '#fc5200', padding: '2px 8px' }}
+                >
+                  Disconnect
+                </Button>
+              </>
+            ) : (
+              <button
+                  type="button"
+                  onClick={!isStravaConnecting ? onConnectStrava : undefined}
+                  disabled={isStravaConnecting}
+                  className="strava-connect-btn-wrapper"
+              >
+                  <img
+                      src={stravaConnectBtn}
+                      alt="Connect with Strava"
+                      className={`strava-connect-btn ${isStravaConnecting ? 'connecting' : ''}`}
+                  />
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Heart Rate Sensor Control */}
         {isHrConnected && (

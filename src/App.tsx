@@ -4,6 +4,7 @@ import { saveAs } from 'file-saver';
 import { useHeartRateSensor } from './hooks/useHeartRateSensor';
 import { useTreadmillSensor } from './hooks/useTreadmillSensor';
 import { useRecorder } from './hooks/useRecorder';
+import { useStrava } from './hooks/useStrava';
 import { Header } from './components/Header';
 import { DataDisplay } from './components/DataDisplay';
 import { RecordingControls } from './components/RecordingControls';
@@ -41,6 +42,12 @@ const App: React.FC = () => {
     connectTreadmill,
     disconnectTreadmill,
   } = useTreadmillSensor();
+  const {
+    stravaAuth,
+    isConnecting: isStravaConnecting,
+    connect: connectStrava,
+    disconnect: disconnectStrava
+  } = useStrava();
 
   const {
     recordingState, elapsedSeconds, elevationGain,
@@ -102,6 +109,10 @@ const App: React.FC = () => {
           treadmillName={treadmillName}
           onConnectTreadmill={connectTreadmill}
           onDisconnectTreadmill={disconnectTreadmill}
+          stravaAuth={stravaAuth}
+          isStravaConnecting={isStravaConnecting}
+          onConnectStrava={connectStrava}
+          onDisconnectStrava={disconnectStrava}
         />
         <main className="App-content">
           <DataDisplay
@@ -137,6 +148,8 @@ const App: React.FC = () => {
           elapsedTime={formatTime(elapsedSeconds)}
           onSave={handleSave}
           onDiscard={handleDiscard}
+          stravaAuth={stravaAuth}
+          trackPoints={getTrackPoints()}
         />
       </div>
     </ThemeProvider>
