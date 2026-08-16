@@ -6,6 +6,7 @@ export interface RecorderState {
   recordingState: RecordingState;
   elapsedSeconds: number;
   elevationGain: number;
+  recordedDistanceMeters: number;
 }
 
 export interface RecorderActions {
@@ -30,8 +31,10 @@ export function useRecorder(): RecorderState & RecorderActions {
   const [recordingState, setRecordingState] = useState<RecordingState>(RecordingState.Idle);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [elevationGain, setElevationGain] = useState(0.0);
+  const [recordedDistanceMeters, setRecordedDistanceMeters] = useState(0.0);
 
   const currentElevationRef = useRef<number>(BASE_ELEVATION_METERS);
+  const currentDistanceRef = useRef<number>(0.0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const sensorDataRef = useRef<Omit<TrackPoint, 'timestamp'>>({});
 
@@ -54,6 +57,10 @@ export function useRecorder(): RecorderState & RecorderActions {
       let ele = currentElevationRef.current;
       if (speed > 0) {
         const stepDistanceMeters = (speed / 3.6) * 1;
+        
+        currentDistanceRef.current += stepDistanceMeters;
+        setRecordedDistanceMeters(currentDistanceRef.current);
+
         const stepElevationGainMeters = stepDistanceMeters * (inclination / 100);
         ele = Number((ele + stepElevationGainMeters).toFixed(2));
         currentElevationRef.current = ele;
@@ -74,7 +81,9 @@ export function useRecorder(): RecorderState & RecorderActions {
     setRecordingState(RecordingState.Recording);
     setElapsedSeconds(0);
     currentElevationRef.current = BASE_ELEVATION_METERS;
+    currentDistanceRef.current = 0.0;
     setElevationGain(0.0);
+    setRecordedDistanceMeters(0.0);
     startTimer();
   }, [startTimer]);
 
@@ -101,7 +110,9 @@ export function useRecorder(): RecorderState & RecorderActions {
     setRecordingState(RecordingState.Idle);
     setElapsedSeconds(0);
     currentElevationRef.current = BASE_ELEVATION_METERS;
+    currentDistanceRef.current = 0.0;
     setElevationGain(0.0);
+    setRecordedDistanceMeters(0.0);
     sensorDataRef.current = {};
   }, []);
 
@@ -122,6 +133,7 @@ export function useRecorder(): RecorderState & RecorderActions {
     recordingState,
     elapsedSeconds,
     elevationGain,
+    recordedDistanceMeters,
     start,
     pause,
     resume,

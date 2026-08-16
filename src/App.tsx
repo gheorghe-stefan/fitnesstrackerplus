@@ -9,6 +9,7 @@ import { Header } from './components/Header';
 import { DataDisplay } from './components/DataDisplay';
 import { RecordingControls } from './components/RecordingControls';
 import { SaveDialog } from './components/SaveDialog';
+import { DebugPanel } from './components/DebugPanel';
 import { TcxExporter } from './services/TcxExporter';
 import { formatTime } from './services/TimeFormatter';
 import { RecordingState } from './domain/models';
@@ -50,7 +51,7 @@ const App: React.FC = () => {
   } = useStrava();
 
   const {
-    recordingState, elapsedSeconds, elevationGain,
+    recordingState, elapsedSeconds, elevationGain, recordedDistanceMeters,
     start, pause, resume, stop, reset,
     getTrackPoints, setSensorData,
   } = useRecorder();
@@ -122,6 +123,7 @@ const App: React.FC = () => {
             treadmillData={treadmillData}
             isTreadmillConnected={isTreadmillConnected}
             elevationGain={elevationGain}
+            recordedDistanceMeters={recordedDistanceMeters}
           />
           <RecordingControls
             recordingState={recordingState}
@@ -151,6 +153,7 @@ const App: React.FC = () => {
           stravaAuth={stravaAuth}
           trackPoints={getTrackPoints()}
         />
+        <DebugPanel />
       </div>
     </ThemeProvider>
   );

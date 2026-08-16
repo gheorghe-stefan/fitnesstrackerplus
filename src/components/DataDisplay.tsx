@@ -9,6 +9,7 @@ export interface DataDisplayProps {
   treadmillData?: TreadmillData;
   isTreadmillConnected?: boolean;
   elevationGain?: number;
+  recordedDistanceMeters?: number;
 }
 
 /**
@@ -22,6 +23,7 @@ export const DataDisplay: React.FC<DataDisplayProps> = ({
   treadmillData,
   isTreadmillConnected = false,
   elevationGain = 0.0,
+  recordedDistanceMeters = 0.0,
 }) => {
   const speedDisplay = isTreadmillConnected && treadmillData
     ? treadmillData.speed.toFixed(1)
@@ -35,12 +37,8 @@ export const DataDisplay: React.FC<DataDisplayProps> = ({
     ? `Level ${treadmillData.rawInclineLevel}`
     : '';
 
-  const distanceKmDisplay = isTreadmillConnected && treadmillData
-    ? (Math.floor(treadmillData.distance / 10) / 100).toFixed(2)
-    : '--';
-
-  const caloriesDisplay = isTreadmillConnected && treadmillData
-    ? treadmillData.calories.toString()
+  const distanceKmDisplay = isTreadmillConnected
+    ? (Math.floor(recordedDistanceMeters) / 1000).toFixed(3)
     : '--';
 
   const elevationDisplay = elevationGain > 0
@@ -109,17 +107,6 @@ export const DataDisplay: React.FC<DataDisplayProps> = ({
             {distanceKmDisplay}
           </span>
           <span className="metric-unit">km</span>
-        </div>
-      </div>
-
-      {/* Calories Card */}
-      <div className="metric-card calories-card">
-        <div className="metric-label">Calories</div>
-        <div className="metric-value-container">
-          <span className={`metric-value calories-value ${isTreadmillConnected ? 'active' : ''}`}>
-            {caloriesDisplay}
-          </span>
-          <span className="metric-unit">kcal</span>
         </div>
       </div>
     </div>
