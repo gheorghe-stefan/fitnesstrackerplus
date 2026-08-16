@@ -68,7 +68,6 @@ export class TcxExporter implements IActivityExporter {
 ${formattedTrackpoints.join('\n')}
         </Track>
       </Lap>
-      <Notes>${this.escapeXml(notesContent)}</Notes>
     </Activity>
   </Activities>
 </TrainingCenterDatabase>`;

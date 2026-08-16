@@ -89,7 +89,7 @@ export class StravaService {
         });
     }
 
-    static async EnqueueActivityForUpload(accessToken: string, fileBuffer: ArrayBuffer, activityName: string, activityDescription?: string, dataType: 'gpx' | 'tcx' = 'tcx'): Promise<StravaUpload | null> {
+    static async EnqueueActivityForUpload(accessToken: string, fileBuffer: ArrayBuffer, activityName: string, activityDescription?: string, dataType: 'gpx' | 'tcx' = 'tcx', sportType: string = 'VirtualRun'): Promise<StravaUpload | null> {
         const url = `https://www.strava.com/api/v3/uploads`;
         const formData = new FormData();
         const mimeType = dataType === 'tcx' ? 'application/vnd.garmin.tcx+xml' : 'application/gpx+xml';
@@ -100,7 +100,9 @@ export class StravaService {
             formData.append('description', activityDescription);
         }
         formData.append('data_type', dataType);
+        formData.append('sport_type', sportType);
         formData.append('commute', 'false');
+        formData.append('trainer', '0');
 
         try {
             const response = await fetch(url, {
