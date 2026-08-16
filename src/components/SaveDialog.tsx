@@ -40,7 +40,7 @@ export const SaveDialog: React.FC<SaveDialogProps> = ({
   trackPoints,
 }) => {
   const [uploading, setUploading] = useState(false);
-  const [uploadMessage, setUploadMessage] = useState('');
+  const [uploadMessage, setUploadMessage] = useState<React.ReactNode>('');
   const [uploadComplete, setUploadComplete] = useState(false);
   const [uploadError, setUploadError] = useState(false);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
@@ -89,7 +89,19 @@ export const SaveDialog: React.FC<SaveDialogProps> = ({
             if (pollingRef.current) clearInterval(pollingRef.current);
             setUploading(false);
           } else if (status.activity_id) {
-            setUploadMessage('Activity successfully uploaded to Strava!');
+            setUploadMessage(
+              <span>
+                Activity successfully uploaded to Strava!{' '}
+                <a 
+                  href={`https://www.strava.com/activities/${status.activity_id}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={{ color: '#aed581', fontWeight: 'bold', textDecoration: 'underline' }}
+                >
+                  View Activity
+                </a>
+              </span>
+            );
             setUploadComplete(true);
             if (pollingRef.current) clearInterval(pollingRef.current);
             setUploading(false);

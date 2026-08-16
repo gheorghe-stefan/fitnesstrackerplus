@@ -7,7 +7,7 @@ import VirtualSensors from "./VirtualSensors";
 
 export class SensorManager
 {    
-    public static UseVirtualSensors: boolean = false;
+    public static UseVirtualSensors: boolean = new URLSearchParams(window.location.search).get('mock') === '1';
 
     private _HRSensor: ISensor<number> | null = null;
     public get HRSensor(): ISensor<number> | null { return this._HRSensor; }

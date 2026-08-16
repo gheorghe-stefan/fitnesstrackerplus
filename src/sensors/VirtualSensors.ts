@@ -1,4 +1,5 @@
 import { ISensor } from "../domain/ISensor";
+import { TreadmillData } from "../domain/TreadmillData";
 
 export class VirtualSensor<T> implements ISensor<T>
 {
@@ -38,13 +39,47 @@ export class VirtualSensor<T> implements ISensor<T>
 export default abstract class VirtualSensors
 {
     static HRSensor: VirtualSensor<number> = new VirtualSensor(70, "Virtual HR Sensor");
-    static TreadmillSensor: VirtualSensor<import("../domain/TreadmillData").TreadmillData> = new VirtualSensor({
-        speed: 8.5,
-        inclination: 6.3,
-        rawInclineLevel: 1,
-        distance: 1250,
-        calories: 85,
-        heartRate: 142,
-        elapsedTime: 480,
+    
+    static TreadmillSensor: VirtualSensor<TreadmillData> = new VirtualSensor({
+        speed: 0,
+        inclination: 0,
+        rawInclineLevel: 0,
+        distance: 0,
+        calories: 0,
+        heartRate: 70,
+        elapsedTime: 0,
     }, "Virtual Treadmill Sensor");
+
+    private static timer: NodeJS.Timeout | null = null;
+    private static lastTick: number = 0;
+
+    static startSimulation() {
+        if (this.timer) return;
+        this.lastTick = Date.now();
+        this.timer = setInterval(() => {
+            const now = Date.now();
+            const deltaSeconds = (now - this.lastTick) / 1000;
+            this.lastTick = now;
+
+            const current = this.TreadmillSensor.Value;
+            
+            // Only accumulate if speed > 0
+            if (current.speed > 0) {
+                const distanceIncrement = (current.speed * 1000 / 3600) * deltaSeconds;
+                const caloriesIncrement = (current.speed * (deltaSeconds / 3600)) * 75; // Mock assuming 75kg
+
+                const newData: TreadmillData = {
+                    ...current,
+                    distance: current.distance + distanceIncrement,
+                    elapsedTime: current.elapsedTime + deltaSeconds,
+                    calories: current.calories + caloriesIncrement
+                };
+                
+                this.TreadmillSensor.setValue(newData);
+            }
+        }, 1000);
+    }
 }
+
+// Auto-start simulation when imported
+VirtualSensors.startSimulation();

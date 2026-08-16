@@ -1,0 +1,62 @@
+.debug-panel {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 300px;
+    background: rgba(30, 41, 59, 0.95);
+    border: 1px solid var(--accent-green);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    color: white;
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+}
+
+.debug-header {
+    background: rgba(124, 179, 66, 0.2);
+    padding: 10px 15px;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(124, 179, 66, 0.3);
+}
+
+.debug-header:hover {
+    background: rgba(124, 179, 66, 0.3);
+}
+
+.debug-content {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.debug-row {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.debug-row label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #aed581;
+}
+
+.debug-row input[type="range"] {
+    width: 100%;
+    cursor: pointer;
+}
+
+.debug-future-section button {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #888;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: not-allowed;
+}
