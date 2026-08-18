@@ -9,6 +9,8 @@ export interface TrackPoint {
   readonly speed?: number;
   readonly inclination?: number;
   readonly ele?: number;
+  readonly cadence?: number;
+  readonly power?: number;
 }
 
 /**

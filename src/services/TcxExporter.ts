@@ -81,11 +81,21 @@ ${formattedTrackpoints.join('\n')}
             <HeartRateBpm>
               <Value>${Math.round(tp.hr)}</Value>
             </HeartRateBpm>` : '';
+            
+    const cadenceBlock = tp.cadence !== undefined ? `
+            <Cadence>${Math.round(tp.cadence)}</Cadence>` : '';
+            
+    const powerBlock = tp.power !== undefined ? `
+            <Extensions>
+              <TPX xmlns="http://www.garmin.com/xmlschemas/ActivityExtension/v2">
+                <Watts>${Math.round(tp.power)}</Watts>
+              </TPX>
+            </Extensions>` : '';
 
     return `          <Trackpoint>
             <Time>${tp.timestamp.toISOString()}</Time>
             <AltitudeMeters>${ele}</AltitudeMeters>
-            <DistanceMeters>${dist}</DistanceMeters>${hrBlock}
+            <DistanceMeters>${dist}</DistanceMeters>${hrBlock}${cadenceBlock}${powerBlock}
           </Trackpoint>`;
   }
 

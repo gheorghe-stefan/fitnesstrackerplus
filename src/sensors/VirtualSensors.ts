@@ -1,5 +1,6 @@
 import { ISensor } from "../domain/ISensor";
 import { TreadmillData } from "../domain/TreadmillData";
+import { PowerData } from "../domain/PowerData";
 
 export class VirtualSensor<T> implements ISensor<T>
 {
@@ -40,6 +41,10 @@ export default abstract class VirtualSensors
 {
     static HRSensor: VirtualSensor<number> = new VirtualSensor(70, "Virtual HR Sensor");
     
+    static PowerSensor: VirtualSensor<PowerData> = new VirtualSensor<PowerData>({ power: 0, cadence: 0 }, "Virtual Power Sensor");
+    static TargetPower: number = 200;
+    static TargetCadence: number = 90;
+
     static TreadmillSensor: VirtualSensor<TreadmillData> = new VirtualSensor({
         speed: 0,
         inclination: 0,
@@ -75,7 +80,14 @@ export default abstract class VirtualSensors
                     calories: current.calories + caloriesIncrement
                 };
                 
+                
                 this.TreadmillSensor.setValue(newData);
+            }
+
+            // Simulate Power/Cadence streaming if PowerSensor is active
+            const currentPower = this.PowerSensor.Value;
+            if (currentPower) { 
+                this.PowerSensor.setValue({ power: this.TargetPower, cadence: this.TargetCadence });
             }
         }, 1000);
     }

@@ -139,16 +139,19 @@ body {
 }
 
 .hr-icon,
-.treadmill-icon {
+.treadmill-icon,
+.power-icon {
   color: white !important;
-  font-size: 1.3rem !important;
+  font-size: 2rem !important;
 }
 
-.treadmill-icon {
+.treadmill-icon,
+.power-icon {
   color: var(--text-secondary) !important;
 }
 
-.treadmill-icon.active {
+.treadmill-icon.active,
+.power-icon.active {
   color: white !important;
 }
 
@@ -228,6 +231,7 @@ body {
 .data-display {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
+  grid-auto-rows: 8rem;
   gap: 1.15rem;
   width: 100%;
   max-width: 720px;
@@ -247,6 +251,8 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .metric-card.calories-card {
@@ -445,13 +451,14 @@ body {
 }
 
 /* ===== RESPONSIVE MEDIA ADAPTATIONS ===== */
-@media (max-height: 800px) {
+@media (max-height: 900px) {
   .App-content {
     padding: 0.5rem;
     gap: 0.75rem;
   }
 
   .data-display {
+    grid-auto-rows: 6rem;
     gap: 0.5rem;
   }
 

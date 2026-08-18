@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { formatTime } from '../services/TimeFormatter';
 import { TreadmillData } from '../domain/TreadmillData';
+import { PowerData } from '../domain/PowerData';
 import {
   DndContext,
   closestCenter,
@@ -30,6 +31,8 @@ export interface DataDisplayProps {
   isTreadmillConnected?: boolean;
   elevationGain?: number;
   recordedDistanceMeters?: number;
+  powerData?: PowerData;
+  isPowerConnected?: boolean;
 }
 
 const DEFAULT_LAYOUT = ['hr', 'speed', 'incline', 'elevation', 'timer', 'distance'];
@@ -68,6 +71,7 @@ function SortableWidget({ id, children }: { id: string; children: React.ReactNod
     boxShadow: isDragging ? '0px 10px 20px rgba(0,0,0,0.3)' : undefined,
     scale: isDragging ? '1.02' : '1',
     touchAction: 'none', // Critical for pointer sensor to work on mobile without scrolling
+    height: '100%',
   };
 
   return (
@@ -85,6 +89,8 @@ export const DataDisplay: React.FC<DataDisplayProps> = ({
   isTreadmillConnected = false,
   elevationGain = 0.0,
   recordedDistanceMeters = 0.0,
+  powerData,
+  isPowerConnected = false,
 }) => {
   const [layout, setLayout] = useState<string[]>([]);
   const [hidden, setHidden] = useState<string[]>([]);
@@ -267,21 +273,23 @@ export const DataDisplay: React.FC<DataDisplayProps> = ({
           </div>
         );
       case 'cadence':
+        const cadenceDisplay = isPowerConnected && powerData && powerData.cadence !== undefined ? powerData.cadence : '--';
         return (
           <div className="metric-card">
             <div className="metric-label">Cadence</div>
             <div className="metric-value-container">
-              <span className="metric-value">--</span>
+              <span className={`metric-value ${isPowerConnected ? 'active' : ''}`}>{cadenceDisplay}</span>
               <span className="metric-unit">rpm</span>
             </div>
           </div>
         );
       case 'power':
+        const powerDisplay = isPowerConnected && powerData ? powerData.power : '--';
         return (
           <div className="metric-card">
             <div className="metric-label">Power</div>
             <div className="metric-value-container">
-              <span className="metric-value">--</span>
+              <span className={`metric-value ${isPowerConnected ? 'active' : ''}`}>{powerDisplay}</span>
               <span className="metric-unit">W</span>
             </div>
           </div>
