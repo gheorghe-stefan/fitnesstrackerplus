@@ -46,6 +46,8 @@ export const Header: React.FC<HeaderProps> = ({
         <h1 className="App-title-logo">FitnessTracker<span className="title-plus">+</span></h1>
       </div>
       <div className="header-right">
+        {/* Settings Portal Container */}
+        <div id="header-settings-portal" style={{ display: 'flex', alignItems: 'center', marginRight: '8px' }} />
 
         {/* Strava Control */}
         {onConnectStrava && onDisconnectStrava && (
