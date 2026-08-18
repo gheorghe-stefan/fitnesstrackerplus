@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { formatTime } from '../services/TimeFormatter';
 import { TreadmillData } from '../domain/TreadmillData';
 import {
@@ -292,18 +293,16 @@ export const DataDisplay: React.FC<DataDisplayProps> = ({
 
   if (!isLoaded) return null;
 
-  return (
-    <div style={{ position: 'relative', width: '100%' }}>
-      <div style={{ position: 'absolute', top: '-40px', right: '0px', zIndex: 10 }}>
-        <IconButton 
-          onClick={(e) => setAnchorEl(e.currentTarget)} 
-          size="small" 
-          sx={{ color: 'rgba(255,255,255,0.7)', '&:hover': { color: 'white' } }}
-        >
-          <SettingsIcon />
-        </IconButton>
-      </div>
-
+  const portalRoot = document.getElementById('header-settings-portal');
+  const settingsButton = (
+    <>
+      <IconButton 
+        onClick={(e) => setAnchorEl(e.currentTarget)} 
+        size="small" 
+        sx={{ color: 'rgba(255,255,255,0.7)', '&:hover': { color: 'white' } }}
+      >
+        <SettingsIcon />
+      </IconButton>
       <Popover
         open={Boolean(anchorEl)}
         anchorEl={anchorEl}
@@ -355,6 +354,12 @@ export const DataDisplay: React.FC<DataDisplayProps> = ({
           ))}
         </FormGroup>
       </Popover>
+    </>
+  );
+
+  return (
+    <div style={{ position: 'relative', width: '100%' }}>
+      {portalRoot ? createPortal(settingsButton, portalRoot) : settingsButton}
 
       <DndContext
         sensors={sensors}
