@@ -1,6 +1,6 @@
 import React from 'react';
 import { IconButton, Tooltip, Button } from '@mui/material';
-import { Favorite, HeartBroken, FitnessCenter } from '@mui/icons-material';
+import { MonitorHeart, HeartBroken, DirectionsRun, Bolt } from '@mui/icons-material';
 import { StravaAuthentication } from '../strava/StravaModels';
 import stravaConnectBtn from '../assets/strava/btn_connect_orange.png';
 
@@ -11,6 +11,9 @@ export interface HeaderProps {
   treadmillName?: string | null;
   onConnectTreadmill?: () => void;
   onDisconnectTreadmill?: () => void;
+  powerName?: string | null;
+  onConnectPower?: () => void;
+  onDisconnectPower?: () => void;
   stravaAuth?: StravaAuthentication | null;
   onConnectStrava?: () => void;
   onDisconnectStrava?: () => void;
@@ -27,6 +30,9 @@ export const Header: React.FC<HeaderProps> = ({
   treadmillName = null,
   onConnectTreadmill,
   onDisconnectTreadmill,
+  powerName = null,
+  onConnectPower,
+  onDisconnectPower,
   stravaAuth,
   onConnectStrava,
   onDisconnectStrava,
@@ -34,6 +40,7 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const isHrConnected = sensorName !== null;
   const isTreadmillConnected = treadmillName !== null;
+  const isPowerConnected = powerName !== null;
 
   return (
     <header className="App-header">
@@ -91,7 +98,7 @@ export const Header: React.FC<HeaderProps> = ({
         {isHrConnected ? (
           <Tooltip title={`Disconnect HR (${sensorName})`}>
             <IconButton className="button hr-button connected" onClick={onDisconnect} id="btn-hr-disconnect">
-              <Favorite className="hr-icon pulse" />
+              <MonitorHeart className="hr-icon pulse" />
             </IconButton>
           </Tooltip>
         ) : (
@@ -115,7 +122,7 @@ export const Header: React.FC<HeaderProps> = ({
                   onClick={onDisconnectTreadmill}
                   id="btn-treadmill-disconnect"
                 >
-                  <FitnessCenter className="treadmill-icon active" />
+                  <DirectionsRun className="treadmill-icon active" />
                 </IconButton>
               </Tooltip>
             ) : (
@@ -125,7 +132,38 @@ export const Header: React.FC<HeaderProps> = ({
                   onClick={onConnectTreadmill}
                   id="btn-treadmill-connect"
                 >
-                  <FitnessCenter className="treadmill-icon" />
+                  <DirectionsRun className="treadmill-icon" />
+                </IconButton>
+              </Tooltip>
+            )}
+          </>
+        )}
+
+        {/* Power Sensor Control */}
+        {onConnectPower && onDisconnectPower && (
+          <>
+            {isPowerConnected && (
+              <span className="sensor-name power-name" style={{ background: 'rgba(255, 193, 7, 0.15)', borderColor: 'rgba(255, 193, 7, 0.35)', color: '#ffc107' }}>{powerName}</span>
+            )}
+            {isPowerConnected ? (
+              <Tooltip title={`Disconnect Power Meter (${powerName})`}>
+                <IconButton
+                  className="button power-button connected"
+                  style={{ background: 'linear-gradient(145deg, #ffc107, #ff9800)', boxShadow: '0 0 20px rgba(255, 193, 7, 0.4)' }}
+                  onClick={onDisconnectPower}
+                  id="btn-power-disconnect"
+                >
+                  <Bolt className="power-icon active" />
+                </IconButton>
+              </Tooltip>
+            ) : (
+              <Tooltip title="Connect Power Meter (BLE)">
+                <IconButton
+                  className="button treadmill-button disconnected"
+                  onClick={onConnectPower}
+                  id="btn-power-connect"
+                >
+                  <Bolt className="power-icon" />
                 </IconButton>
               </Tooltip>
             )}

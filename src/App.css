@@ -139,16 +139,19 @@ body {
 }
 
 .hr-icon,
-.treadmill-icon {
+.treadmill-icon,
+.power-icon {
   color: white !important;
-  font-size: 1.3rem !important;
+  font-size: 2rem !important;
 }
 
-.treadmill-icon {
+.treadmill-icon,
+.power-icon {
   color: var(--text-secondary) !important;
 }
 
-.treadmill-icon.active {
+.treadmill-icon.active,
+.power-icon.active {
   color: white !important;
 }
 

@@ -3,6 +3,7 @@ import { ThemeProvider, createTheme } from '@mui/material';
 import { saveAs } from 'file-saver';
 import { useHeartRateSensor } from './hooks/useHeartRateSensor';
 import { useTreadmillSensor } from './hooks/useTreadmillSensor';
+import { usePowerSensor } from './hooks/usePowerSensor';
 import { useRecorder } from './hooks/useRecorder';
 import { useStrava } from './hooks/useStrava';
 import { Header } from './components/Header';
@@ -44,6 +45,13 @@ const App: React.FC = () => {
     disconnectTreadmill,
   } = useTreadmillSensor();
   const {
+    powerName,
+    powerData,
+    isPowerConnected,
+    connectPower,
+    disconnectPower,
+  } = usePowerSensor();
+  const {
     stravaAuth,
     isConnecting: isStravaConnecting,
     connect: connectStrava,
@@ -71,8 +79,10 @@ const App: React.FC = () => {
       hr: effectiveHr,
       speed: isTreadmillConnected ? speed : undefined,
       inclination: isTreadmillConnected ? inclination : undefined,
+      cadence: isPowerConnected && powerData ? powerData.cadence : undefined,
+      power: isPowerConnected && powerData ? powerData.power : undefined,
     });
-  }, [heartRate, isConnected, treadmillData, isTreadmillConnected, setSensorData]);
+  }, [heartRate, isConnected, treadmillData, isTreadmillConnected, powerData, isPowerConnected, setSensorData]);
 
   const handleStart = () => {
     start();
@@ -110,6 +120,9 @@ const App: React.FC = () => {
           treadmillName={treadmillName}
           onConnectTreadmill={connectTreadmill}
           onDisconnectTreadmill={disconnectTreadmill}
+          powerName={powerName}
+          onConnectPower={connectPower}
+          onDisconnectPower={disconnectPower}
           stravaAuth={stravaAuth}
           isStravaConnecting={isStravaConnecting}
           onConnectStrava={connectStrava}
@@ -124,6 +137,8 @@ const App: React.FC = () => {
             isTreadmillConnected={isTreadmillConnected}
             elevationGain={elevationGain}
             recordedDistanceMeters={recordedDistanceMeters}
+            powerData={powerData}
+            isPowerConnected={isPowerConnected}
           />
           <RecordingControls
             recordingState={recordingState}

@@ -53,4 +53,38 @@ describe('TcxExporter', () => {
     expect(tcx).toContain('&amp;');
     expect(tcx).toContain('&quot;hard&quot;');
   });
+
+  it('exports all possible widget metrics including Cadence and Power into TCX', () => {
+    const trackPoints: TrackPoint[] = [];
+    const baseTime = new Date('2026-08-07T10:00:00Z').getTime();
+    
+    // Generate values for all possible widgets for 10 seconds
+    for (let i = 0; i < 10; i++) {
+      trackPoints.push({
+        timestamp: new Date(baseTime + i * 1000),
+        ele: 755.0 + (i * 0.5),
+        hr: 140 + i,
+        speed: 10.0 + (i * 0.1),
+        inclination: 4.5,
+        cadence: 90 + i,
+        power: 200 + i,
+      });
+    }
+
+    const tcx = exporter.export(trackPoints);
+
+    // Verify Heart Rate
+    expect(tcx).toContain('<Value>140</Value>');
+    expect(tcx).toContain('<Value>149</Value>');
+
+    // Verify Cadence
+    expect(tcx).toContain('<Cadence>90</Cadence>');
+    expect(tcx).toContain('<Cadence>99</Cadence>');
+    
+    // Verify Power (Watts in TPX extension)
+    expect(tcx).toContain('<Extensions>');
+    expect(tcx).toContain('<TPX xmlns="http://www.garmin.com/xmlschemas/ActivityExtension/v2">');
+    expect(tcx).toContain('<Watts>200</Watts>');
+    expect(tcx).toContain('<Watts>209</Watts>');
+  });
 });

@@ -1,7 +1,7 @@
 import { ISensor } from "../../domain/ISensor";
 import { IBluetoothLESensor } from "./BluetoothLESensor";
 
-class BluetoothSensorBase
+export class BluetoothSensorBase
 {
     public constructor(protected bluetoothLESensor: IBluetoothLESensor)
     {

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { formatTime } from '../services/TimeFormatter';
 import { TreadmillData } from '../domain/TreadmillData';
+import { PowerData } from '../domain/PowerData';
 import {
   DndContext,
   closestCenter,
@@ -30,6 +31,8 @@ export interface DataDisplayProps {
   isTreadmillConnected?: boolean;
   elevationGain?: number;
   recordedDistanceMeters?: number;
+  powerData?: PowerData;
+  isPowerConnected?: boolean;
 }
 
 const DEFAULT_LAYOUT = ['hr', 'speed', 'incline', 'elevation', 'timer', 'distance'];
@@ -85,6 +88,8 @@ export const DataDisplay: React.FC<DataDisplayProps> = ({
   isTreadmillConnected = false,
   elevationGain = 0.0,
   recordedDistanceMeters = 0.0,
+  powerData,
+  isPowerConnected = false,
 }) => {
   const [layout, setLayout] = useState<string[]>([]);
   const [hidden, setHidden] = useState<string[]>([]);
@@ -162,7 +167,8 @@ export const DataDisplay: React.FC<DataDisplayProps> = ({
   const speedDisplay = isTreadmillConnected && treadmillData ? treadmillData.speed.toFixed(1) : '--';
   const inclineDisplay = isTreadmillConnected && treadmillData ? `${treadmillData.inclination.toFixed(1)}%` : '--';
   const inclineLevelSub = isTreadmillConnected && treadmillData ? `Level ${treadmillData.rawInclineLevel}` : '';
-  const distanceKmDisplay = isTreadmillConnected ? (Math.floor(recordedDistanceMeters) / 1000).toFixed(3) : '--';
+  const activeDistance = recordedDistanceMeters > 0 ? recordedDistanceMeters : (treadmillData?.distance || 0);
+  const distanceKmDisplay = isTreadmillConnected ? (Math.floor(activeDistance) / 1000).toFixed(3) : '--';
   const elevationDisplay = elevationGain > 0 ? `+${elevationGain.toFixed(1)}` : '+0.0';
 
   const renderWidgetContent = (id: string) => {
@@ -216,11 +222,12 @@ export const DataDisplay: React.FC<DataDisplayProps> = ({
           </div>
         );
       case 'timer':
+        const activeDuration = elapsedSeconds > 0 ? elapsedSeconds : (treadmillData?.elapsedTime || 0);
         return (
           <div className="metric-card timer-card">
             <div className="metric-label">Duration</div>
             <div className="metric-value-container">
-              <span className="metric-value timer-value">{formatTime(elapsedSeconds)}</span>
+              <span className={`metric-value timer-value ${isTreadmillConnected ? 'active' : ''}`}>{formatTime(activeDuration)}</span>
             </div>
           </div>
         );
@@ -267,21 +274,23 @@ export const DataDisplay: React.FC<DataDisplayProps> = ({
           </div>
         );
       case 'cadence':
+        const cadenceDisplay = isPowerConnected && powerData && powerData.cadence !== undefined ? powerData.cadence : '--';
         return (
           <div className="metric-card">
             <div className="metric-label">Cadence</div>
             <div className="metric-value-container">
-              <span className="metric-value">--</span>
+              <span className={`metric-value ${isPowerConnected ? 'active' : ''}`}>{cadenceDisplay}</span>
               <span className="metric-unit">rpm</span>
             </div>
           </div>
         );
       case 'power':
+        const powerDisplay = isPowerConnected && powerData ? powerData.power : '--';
         return (
           <div className="metric-card">
             <div className="metric-label">Power</div>
             <div className="metric-value-container">
-              <span className="metric-value">--</span>
+              <span className={`metric-value ${isPowerConnected ? 'active' : ''}`}>{powerDisplay}</span>
               <span className="metric-unit">W</span>
             </div>
           </div>

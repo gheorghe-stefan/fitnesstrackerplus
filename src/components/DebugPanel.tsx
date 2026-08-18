@@ -7,6 +7,8 @@ export const DebugPanel: React.FC = () => {
     const [hr, setHr] = useState<number>(70);
     const [speed, setSpeed] = useState<number>(0);
     const [incline, setIncline] = useState<number>(0);
+    const [power, setPower] = useState<number>(200);
+    const [cadence, setCadence] = useState<number>(90);
     const [isOpen, setIsOpen] = useState<boolean>(true);
 
     if (!SensorManager.UseVirtualSensors) {
@@ -46,6 +48,20 @@ export const DebugPanel: React.FC = () => {
         });
     };
 
+    const handlePowerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = parseInt(e.target.value);
+        setPower(val);
+        VirtualSensors.TargetPower = val;
+        VirtualSensors.PowerSensor.setValue({ power: val, cadence: VirtualSensors.TargetCadence });
+    };
+
+    const handleCadenceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = parseInt(e.target.value);
+        setCadence(val);
+        VirtualSensors.TargetCadence = val;
+        VirtualSensors.PowerSensor.setValue({ power: VirtualSensors.TargetPower, cadence: val });
+    };
+
     return (
         <div className={`debug-panel ${isOpen ? 'open' : 'closed'}`}>
             <div className="debug-header" onClick={() => setIsOpen(!isOpen)}>
@@ -65,12 +81,18 @@ export const DebugPanel: React.FC = () => {
                         <label>Incline (%): {incline.toFixed(1)}</label>
                         <input type="range" min="0" max="15" step="0.5" value={incline} onChange={handleInclineChange} />
                     </div>
+                    <div className="debug-row">
+                        <label>Power (W): {power}</label>
+                        <input type="range" min="0" max="1000" step="5" value={power} onChange={handlePowerChange} />
+                    </div>
+                    <div className="debug-row">
+                        <label>Cadence (rpm): {cadence}</label>
+                        <input type="range" min="0" max="150" step="1" value={cadence} onChange={handleCadenceChange} />
+                    </div>
                     
                     <div className="debug-future-section">
                         <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '10px' }}>Future Mocks:</p>
                         <div style={{ display: 'flex', gap: '5px' }}>
-                            <button disabled style={{ fontSize: '0.65rem' }}>Cadence</button>
-                            <button disabled style={{ fontSize: '0.65rem' }}>Power</button>
                             <button disabled style={{ fontSize: '0.65rem' }}>GPS</button>
                         </div>
                     </div>
