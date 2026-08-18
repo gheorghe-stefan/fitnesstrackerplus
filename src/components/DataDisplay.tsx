@@ -167,8 +167,7 @@ export const DataDisplay: React.FC<DataDisplayProps> = ({
   const speedDisplay = isTreadmillConnected && treadmillData ? treadmillData.speed.toFixed(1) : '--';
   const inclineDisplay = isTreadmillConnected && treadmillData ? `${treadmillData.inclination.toFixed(1)}%` : '--';
   const inclineLevelSub = isTreadmillConnected && treadmillData ? `Level ${treadmillData.rawInclineLevel}` : '';
-  const activeDistance = recordedDistanceMeters > 0 ? recordedDistanceMeters : (treadmillData?.distance || 0);
-  const distanceKmDisplay = isTreadmillConnected ? (Math.floor(activeDistance) / 1000).toFixed(3) : '--';
+  const distanceKmDisplay = isTreadmillConnected ? (Math.floor(recordedDistanceMeters) / 1000).toFixed(3) : '--';
   const elevationDisplay = elevationGain > 0 ? `+${elevationGain.toFixed(1)}` : '+0.0';
 
   const renderWidgetContent = (id: string) => {
@@ -222,12 +221,11 @@ export const DataDisplay: React.FC<DataDisplayProps> = ({
           </div>
         );
       case 'timer':
-        const activeDuration = elapsedSeconds > 0 ? elapsedSeconds : (treadmillData?.elapsedTime || 0);
         return (
           <div className="metric-card timer-card">
             <div className="metric-label">Duration</div>
             <div className="metric-value-container">
-              <span className={`metric-value timer-value ${isTreadmillConnected ? 'active' : ''}`}>{formatTime(activeDuration)}</span>
+              <span className="metric-value timer-value">{formatTime(elapsedSeconds)}</span>
             </div>
           </div>
         );
