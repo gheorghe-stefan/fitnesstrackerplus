@@ -71,6 +71,7 @@ function SortableWidget({ id, children }: { id: string; children: React.ReactNod
     boxShadow: isDragging ? '0px 10px 20px rgba(0,0,0,0.3)' : undefined,
     scale: isDragging ? '1.02' : '1',
     touchAction: 'none', // Critical for pointer sensor to work on mobile without scrolling
+    height: '100%',
   };
 
   return (
