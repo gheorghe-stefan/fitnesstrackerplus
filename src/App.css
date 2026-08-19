@@ -115,43 +115,37 @@ body {
 }
 
 .hr-button.connected {
-  background: linear-gradient(145deg, var(--accent-green), var(--accent-green-dark)) !important;
-  box-shadow: 0 0 20px var(--glow-green) !important;
-}
-
-.hr-button.disconnected {
   background: linear-gradient(145deg, var(--accent-red), var(--accent-red-dark)) !important;
   box-shadow: 0 0 15px var(--glow-red) !important;
 }
 
 .treadmill-button.connected {
-  background: linear-gradient(145deg, #0288d1, #01579b) !important;
-  box-shadow: 0 0 20px rgba(2, 136, 209, 0.4) !important;
+  background: linear-gradient(145deg, var(--accent-green), var(--accent-green-dark)) !important;
+  box-shadow: 0 0 20px var(--glow-green) !important;
 }
 
-.treadmill-button.disconnected {
+.sensor-button.disconnected {
   background: rgba(255, 255, 255, 0.08) !important;
   border: 1px solid var(--border-subtle) !important;
+  box-shadow: none !important;
 }
 
-.treadmill-button.disconnected:hover {
+.sensor-button.disconnected:hover {
   background: rgba(255, 255, 255, 0.15) !important;
 }
 
 .hr-icon,
 .treadmill-icon,
-.power-icon {
-  color: white !important;
+.power-icon,
+.location-icon {
+  color: var(--text-secondary) !important;
   font-size: 2rem !important;
 }
 
-.treadmill-icon,
-.power-icon {
-  color: var(--text-secondary) !important;
-}
-
+.hr-icon.pulse,
 .treadmill-icon.active,
-.power-icon.active {
+.power-icon.active,
+.location-icon.active {
   color: white !important;
 }
 

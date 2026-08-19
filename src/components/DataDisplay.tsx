@@ -32,6 +32,7 @@ export interface DataDisplayProps {
   isTreadmillConnected?: boolean;
   elevationGain?: number;
   recordedDistanceMeters?: number;
+  currentSpeed?: number;
   powerData?: PowerData;
   isPowerConnected?: boolean;
   locationData?: LocationData;
@@ -92,6 +93,7 @@ export const DataDisplay: React.FC<DataDisplayProps> = ({
   isTreadmillConnected = false,
   elevationGain = 0.0,
   recordedDistanceMeters = 0.0,
+  currentSpeed = 0.0,
   powerData,
   isPowerConnected = false,
   locationData,
@@ -170,10 +172,12 @@ export const DataDisplay: React.FC<DataDisplayProps> = ({
     saveLayout(newLayout, newHidden);
   };
 
-  const speedDisplay = isTreadmillConnected && treadmillData ? treadmillData.speed.toFixed(1) : '--';
+  const isMovementConnected = isTreadmillConnected || isLocationConnected;
+  
+  const speedDisplay = isMovementConnected ? currentSpeed.toFixed(1) : '--';
   const inclineDisplay = isTreadmillConnected && treadmillData ? `${treadmillData.inclination.toFixed(1)}%` : '--';
   const inclineLevelSub = isTreadmillConnected && treadmillData ? `Level ${treadmillData.rawInclineLevel}` : '';
-  const distanceKmDisplay = isTreadmillConnected ? (Math.floor(recordedDistanceMeters) / 1000).toFixed(3) : '--';
+  const distanceKmDisplay = isMovementConnected ? (Math.floor(recordedDistanceMeters) / 1000).toFixed(3) : '--';
   const elevationDisplay = elevationGain > 0 ? `+${elevationGain.toFixed(1)}` : '+0.0';
 
   const renderWidgetContent = (id: string) => {
@@ -194,10 +198,10 @@ export const DataDisplay: React.FC<DataDisplayProps> = ({
         return (
           <div className="metric-card speed-card">
             <div className="metric-label">Speed</div>
-            <div className="metric-value-container">
-              <span className={`metric-value speed-value ${isTreadmillConnected ? 'active' : ''}`}>
-                {speedDisplay}
-              </span>
+              <div className="metric-value-container">
+                <span className={`metric-value speed-value ${isMovementConnected ? 'active' : ''}`}>
+                  {speedDisplay}
+                </span>
               <span className="metric-unit">km/h</span>
             </div>
           </div>
@@ -239,10 +243,10 @@ export const DataDisplay: React.FC<DataDisplayProps> = ({
         return (
           <div className="metric-card distance-card">
             <div className="metric-label">Distance</div>
-            <div className="metric-value-container">
-              <span className={`metric-value distance-value ${isTreadmillConnected ? 'active' : ''}`}>
-                {distanceKmDisplay}
-              </span>
+              <div className="metric-value-container">
+                <span className={`metric-value distance-value ${isMovementConnected ? 'active' : ''}`}>
+                  {distanceKmDisplay}
+                </span>
               <span className="metric-unit">km</span>
             </div>
           </div>

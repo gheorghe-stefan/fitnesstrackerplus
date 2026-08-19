@@ -110,8 +110,8 @@ export const Header: React.FC<HeaderProps> = ({
           </Tooltip>
         ) : (
           <Tooltip title="Connect heart rate sensor">
-            <IconButton className="button hr-button disconnected" onClick={onConnect} id="btn-hr-connect">
-              <HeartBroken className="hr-icon" />
+            <IconButton className="button sensor-button disconnected" onClick={onConnect} id="btn-hr-connect">
+              <MonitorHeart className="hr-icon" />
             </IconButton>
           </Tooltip>
         )}
@@ -135,7 +135,7 @@ export const Header: React.FC<HeaderProps> = ({
             ) : (
               <Tooltip title="Connect treadmill (FTMS)">
                 <IconButton
-                  className="button treadmill-button disconnected"
+                  className="button sensor-button disconnected"
                   onClick={onConnectTreadmill}
                   id="btn-treadmill-connect"
                 >
@@ -160,13 +160,13 @@ export const Header: React.FC<HeaderProps> = ({
                   onClick={onDisconnectPower}
                   id="btn-power-disconnect"
                 >
-                  <Bolt className="power-icon active" />
+                  <Bolt className="power-icon active" style={{ color: '#fff' }} />
                 </IconButton>
               </Tooltip>
             ) : (
               <Tooltip title="Connect Power Meter (BLE)">
                 <IconButton
-                  className="button treadmill-button disconnected"
+                  className="button sensor-button disconnected"
                   onClick={onConnectPower}
                   id="btn-power-connect"
                 >
@@ -197,12 +197,11 @@ export const Header: React.FC<HeaderProps> = ({
             ) : (
               <Tooltip title="Enable GPS Location">
                 <IconButton
-                  className="button location-button disconnected"
-                  style={{ background: 'rgba(33, 150, 243, 0.05)', border: '1px solid rgba(33, 150, 243, 0.2)' }}
+                  className="button sensor-button disconnected"
                   onClick={onConnectLocation}
                   id="btn-location-connect"
                 >
-                  <SatelliteAlt className="location-icon" style={{ color: 'rgba(33, 150, 243, 0.7)' }} />
+                  <SatelliteAlt className="location-icon" />
                 </IconButton>
               </Tooltip>
             )}

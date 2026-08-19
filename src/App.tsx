@@ -67,7 +67,7 @@ const App: React.FC = () => {
   } = useStrava();
 
   const {
-    recordingState, elapsedSeconds, elevationGain, recordedDistanceMeters,
+    recordingState, elapsedSeconds, elevationGain, recordedDistanceMeters, currentSpeed,
     start, pause, resume, stop, reset,
     getTrackPoints, setSensorData,
   } = useRecorder();
@@ -151,6 +151,7 @@ const App: React.FC = () => {
             isTreadmillConnected={isTreadmillConnected}
             elevationGain={elevationGain}
             recordedDistanceMeters={recordedDistanceMeters}
+            currentSpeed={currentSpeed}
             powerData={powerData}
             isPowerConnected={isPowerConnected}
             locationData={locationData}
