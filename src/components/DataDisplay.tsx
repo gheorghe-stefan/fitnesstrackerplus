@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { formatTime } from '../services/TimeFormatter';
 import { TreadmillData } from '../domain/TreadmillData';
 import { PowerData } from '../domain/PowerData';
+import { LocationData } from '../domain/models';
 import {
   DndContext,
   closestCenter,
@@ -33,6 +34,8 @@ export interface DataDisplayProps {
   recordedDistanceMeters?: number;
   powerData?: PowerData;
   isPowerConnected?: boolean;
+  locationData?: LocationData;
+  isLocationConnected?: boolean;
 }
 
 const DEFAULT_LAYOUT = ['hr', 'speed', 'incline', 'elevation', 'timer', 'distance'];
@@ -91,6 +94,8 @@ export const DataDisplay: React.FC<DataDisplayProps> = ({
   recordedDistanceMeters = 0.0,
   powerData,
   isPowerConnected = false,
+  locationData,
+  isLocationConnected = false,
 }) => {
   const [layout, setLayout] = useState<string[]>([]);
   const [hidden, setHidden] = useState<string[]>([]);
@@ -243,31 +248,34 @@ export const DataDisplay: React.FC<DataDisplayProps> = ({
           </div>
         );
       case 'latitude':
+        const latDisplay = isLocationConnected && locationData ? locationData.latitude.toFixed(6) : '--';
         return (
           <div className="metric-card">
             <div className="metric-label">Latitude</div>
             <div className="metric-value-container">
-              <span className="metric-value">--</span>
+              <span className="metric-value">{latDisplay}</span>
               <span className="metric-unit">deg</span>
             </div>
           </div>
         );
       case 'longitude':
+        const lngDisplay = isLocationConnected && locationData ? locationData.longitude.toFixed(6) : '--';
         return (
           <div className="metric-card">
             <div className="metric-label">Longitude</div>
             <div className="metric-value-container">
-              <span className="metric-value">--</span>
+              <span className="metric-value">{lngDisplay}</span>
               <span className="metric-unit">deg</span>
             </div>
           </div>
         );
       case 'absElevation':
+        const altDisplay = isLocationConnected && locationData ? locationData.altitude.toFixed(1) : '--';
         return (
           <div className="metric-card">
             <div className="metric-label">Abs Elevation</div>
             <div className="metric-value-container">
-              <span className="metric-value">--</span>
+              <span className="metric-value">{altDisplay}</span>
               <span className="metric-unit">m</span>
             </div>
           </div>

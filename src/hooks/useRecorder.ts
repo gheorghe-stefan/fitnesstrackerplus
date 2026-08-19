@@ -33,8 +33,10 @@ export function useRecorder(): RecorderState & RecorderActions {
   const [elevationGain, setElevationGain] = useState(0.0);
   const [recordedDistanceMeters, setRecordedDistanceMeters] = useState(0.0);
 
-  const currentElevationRef = useRef<number>(BASE_ELEVATION_METERS);
+  const simulatedAltitudeRef = useRef<number>(BASE_ELEVATION_METERS);
+  const cumulativeGainRef = useRef<number>(0.0);
   const currentDistanceRef = useRef<number>(0.0);
+  const prevGpsAltRef = useRef<number | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const sensorDataRef = useRef<Omit<TrackPoint, 'timestamp'>>({});
 
@@ -52,27 +54,43 @@ export function useRecorder(): RecorderState & RecorderActions {
 
       const currentData = sensorDataRef.current;
       const speed = currentData.speed ?? 0;
-      const inclination = currentData.inclination ?? 4.5;
-
-      let ele = currentElevationRef.current;
+      const inclination = currentData.inclination ?? 0;
+      
+      let treadmillDelta = 0;
+      
+      // 1. Calculate Treadmill Climb
       if (speed > 0) {
         const stepDistanceMeters = (speed / 3.6) * 1;
-        
         currentDistanceRef.current += stepDistanceMeters;
         setRecordedDistanceMeters(currentDistanceRef.current);
 
-        const stepElevationGainMeters = stepDistanceMeters * (inclination / 100);
-        ele = Number((ele + stepElevationGainMeters).toFixed(2));
-        currentElevationRef.current = ele;
+        treadmillDelta = stepDistanceMeters * (inclination / 100);
+        simulatedAltitudeRef.current += treadmillDelta;
       }
+      
+      // 2. Calculate GPS Delta
+      let gpsDelta = 0;
+      let absoluteEle = simulatedAltitudeRef.current;
+
+      if (currentData.ele !== undefined) {
+        absoluteEle = currentData.ele; // Strictly use real GPS altitude for the trackpoint
+        
+        if (prevGpsAltRef.current !== null) {
+          gpsDelta = currentData.ele - prevGpsAltRef.current;
+        }
+        prevGpsAltRef.current = currentData.ele;
+      }
+
+      // 3. Accumulate True Elevation Gain (Only positive climbs count towards total gain)
+      if (treadmillDelta > 0) cumulativeGainRef.current += treadmillDelta;
+      if (gpsDelta > 0) cumulativeGainRef.current += gpsDelta;
 
       recorderRef.current.addDataPoint({
         ...currentData,
-        ele,
+        ele: Number(absoluteEle.toFixed(2)),
       });
 
-      const totalGain = Number((ele - BASE_ELEVATION_METERS).toFixed(1));
-      setElevationGain(totalGain > 0 ? totalGain : 0.0);
+      setElevationGain(Number(cumulativeGainRef.current.toFixed(1)));
     }, 1000);
   }, [stopTimer]);
 
@@ -80,8 +98,10 @@ export function useRecorder(): RecorderState & RecorderActions {
     recorderRef.current.start();
     setRecordingState(RecordingState.Recording);
     setElapsedSeconds(0);
-    currentElevationRef.current = BASE_ELEVATION_METERS;
+    simulatedAltitudeRef.current = BASE_ELEVATION_METERS;
+    cumulativeGainRef.current = 0.0;
     currentDistanceRef.current = 0.0;
+    prevGpsAltRef.current = null;
     setElevationGain(0.0);
     setRecordedDistanceMeters(0.0);
     startTimer();
@@ -109,8 +129,10 @@ export function useRecorder(): RecorderState & RecorderActions {
     recorderRef.current.reset();
     setRecordingState(RecordingState.Idle);
     setElapsedSeconds(0);
-    currentElevationRef.current = BASE_ELEVATION_METERS;
+    simulatedAltitudeRef.current = BASE_ELEVATION_METERS;
+    cumulativeGainRef.current = 0.0;
     currentDistanceRef.current = 0.0;
+    prevGpsAltRef.current = null;
     setElevationGain(0.0);
     setRecordedDistanceMeters(0.0);
     sensorDataRef.current = {};

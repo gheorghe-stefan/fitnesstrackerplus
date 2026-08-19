@@ -5,6 +5,7 @@ import { HRBluetoothSensor } from "./bluetooth/BluetoothSensors";
 import { SportstechF37sBluetoothSensor } from "./bluetooth/TreadmillBluetoothSensor";
 import { PowerBluetoothSensor } from "./bluetooth/PowerBluetoothSensor";
 import { PowerData } from "../domain/PowerData";
+import { LocationData } from "../domain/models";
 import VirtualSensors from "./VirtualSensors";
 
 export class SensorManager
@@ -52,6 +53,9 @@ export class SensorManager
     private _PowerSensor: ISensor<PowerData> | null = null;
     public get PowerSensor(): ISensor<PowerData> | null { return this._PowerSensor; }
 
+    private _LocationSensor: ISensor<LocationData> | null = null;
+    public get LocationSensor(): ISensor<LocationData> | null { return this._LocationSensor; }
+
     async SearchPowerSensor(): Promise<ISensor<PowerData>>
     {
         if (SensorManager.UseVirtualSensors)
@@ -66,6 +70,21 @@ export class SensorManager
         }
 
         return this._PowerSensor;
+    }
+
+    async SearchLocationSensor(): Promise<ISensor<LocationData>>
+    {
+        if (SensorManager.UseVirtualSensors)
+        {
+            this._LocationSensor = VirtualSensors.LocationSensor;
+        }
+        else
+        {
+            const { LocationSensor } = await import('./LocationSensor');
+            this._LocationSensor = new LocationSensor();
+        }
+
+        return this._LocationSensor;
     }
 
     private async SearchTreadmillDevice(): Promise<BluetoothDevice>

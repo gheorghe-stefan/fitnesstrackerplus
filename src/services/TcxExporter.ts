@@ -92,10 +92,16 @@ ${formattedTrackpoints.join('\n')}
               </TPX>
             </Extensions>` : '';
 
+    const positionBlock = (tp.lat !== undefined && tp.lng !== undefined) ? `
+            <Position>
+              <LatitudeDegrees>${tp.lat.toFixed(6)}</LatitudeDegrees>
+              <LongitudeDegrees>${tp.lng.toFixed(6)}</LongitudeDegrees>
+            </Position>` : '';
+
     return `          <Trackpoint>
             <Time>${tp.timestamp.toISOString()}</Time>
             <AltitudeMeters>${ele}</AltitudeMeters>
-            <DistanceMeters>${dist}</DistanceMeters>${hrBlock}${cadenceBlock}${powerBlock}
+            <DistanceMeters>${dist}</DistanceMeters>${positionBlock}${hrBlock}${cadenceBlock}${powerBlock}
           </Trackpoint>`;
   }
 
