@@ -1,6 +1,7 @@
 import { ISensor } from "../domain/ISensor";
 import { TreadmillData } from "../domain/TreadmillData";
 import { PowerData } from "../domain/PowerData";
+import { LocationData } from "../domain/models";
 
 export class VirtualSensor<T> implements ISensor<T>
 {
@@ -45,6 +46,11 @@ export default abstract class VirtualSensors
     static TargetPower: number = 200;
     static TargetCadence: number = 90;
 
+    static LocationSensor: VirtualSensor<LocationData> = new VirtualSensor<LocationData>({ latitude: 0, longitude: 0, altitude: 0 }, "Virtual Location Sensor");
+    static TargetLatitude: number = 0;
+    static TargetLongitude: number = 0;
+    static TargetAltitude: number = 0;
+
     static TreadmillSensor: VirtualSensor<TreadmillData> = new VirtualSensor({
         speed: 0,
         inclination: 0,
@@ -88,6 +94,16 @@ export default abstract class VirtualSensors
             const currentPower = this.PowerSensor.Value;
             if (currentPower) { 
                 this.PowerSensor.setValue({ power: this.TargetPower, cadence: this.TargetCadence });
+            }
+
+            // Simulate Location streaming if LocationSensor is active
+            const currentLocation = this.LocationSensor.Value;
+            if (currentLocation) {
+                this.LocationSensor.setValue({ 
+                    latitude: this.TargetLatitude, 
+                    longitude: this.TargetLongitude, 
+                    altitude: this.TargetAltitude 
+                });
             }
         }, 1000);
     }

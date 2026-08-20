@@ -4,6 +4,7 @@ import { saveAs } from 'file-saver';
 import { useHeartRateSensor } from './hooks/useHeartRateSensor';
 import { useTreadmillSensor } from './hooks/useTreadmillSensor';
 import { usePowerSensor } from './hooks/usePowerSensor';
+import { useLocationSensor } from './hooks/useLocationSensor';
 import { useRecorder } from './hooks/useRecorder';
 import { useStrava } from './hooks/useStrava';
 import { Header } from './components/Header';
@@ -52,6 +53,13 @@ const App: React.FC = () => {
     disconnectPower,
   } = usePowerSensor();
   const {
+    locationName,
+    locationData,
+    isLocationConnected,
+    connectLocation,
+    disconnectLocation,
+  } = useLocationSensor();
+  const {
     stravaAuth,
     isConnecting: isStravaConnecting,
     connect: connectStrava,
@@ -59,7 +67,7 @@ const App: React.FC = () => {
   } = useStrava();
 
   const {
-    recordingState, elapsedSeconds, elevationGain, recordedDistanceMeters,
+    recordingState, elapsedSeconds, elevationGain, recordedDistanceMeters, currentSpeed,
     start, pause, resume, stop, reset,
     getTrackPoints, setSensorData,
   } = useRecorder();
@@ -81,8 +89,11 @@ const App: React.FC = () => {
       inclination: isTreadmillConnected ? inclination : undefined,
       cadence: isPowerConnected && powerData ? powerData.cadence : undefined,
       power: isPowerConnected && powerData ? powerData.power : undefined,
+      lat: isLocationConnected && locationData ? locationData.latitude : undefined,
+      lng: isLocationConnected && locationData ? locationData.longitude : undefined,
+      ele: isLocationConnected && locationData ? locationData.altitude : undefined,
     });
-  }, [heartRate, isConnected, treadmillData, isTreadmillConnected, powerData, isPowerConnected, setSensorData]);
+  }, [heartRate, isConnected, treadmillData, isTreadmillConnected, powerData, isPowerConnected, locationData, isLocationConnected, setSensorData]);
 
   const handleStart = () => {
     start();
@@ -123,6 +134,9 @@ const App: React.FC = () => {
           powerName={powerName}
           onConnectPower={connectPower}
           onDisconnectPower={disconnectPower}
+          locationName={locationName}
+          onConnectLocation={connectLocation}
+          onDisconnectLocation={disconnectLocation}
           stravaAuth={stravaAuth}
           isStravaConnecting={isStravaConnecting}
           onConnectStrava={connectStrava}
@@ -137,8 +151,11 @@ const App: React.FC = () => {
             isTreadmillConnected={isTreadmillConnected}
             elevationGain={elevationGain}
             recordedDistanceMeters={recordedDistanceMeters}
+            currentSpeed={currentSpeed}
             powerData={powerData}
             isPowerConnected={isPowerConnected}
+            locationData={locationData}
+            isLocationConnected={isLocationConnected}
           />
           <RecordingControls
             recordingState={recordingState}

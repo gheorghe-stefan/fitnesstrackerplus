@@ -62,12 +62,12 @@ body {
 }
 
 .app-header-logo-icon {
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   object-fit: contain;
   margin-right: 0.85rem;
-  filter: drop-shadow(0 0 14px rgba(129, 199, 132, 0.5));
-  transition: transform 0.3s ease;
+  filter: drop-shadow(0 0 12px rgba(124, 179, 66, 0.4));
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .app-header-logo-icon:hover {
@@ -115,43 +115,37 @@ body {
 }
 
 .hr-button.connected {
-  background: linear-gradient(145deg, var(--accent-green), var(--accent-green-dark)) !important;
-  box-shadow: 0 0 20px var(--glow-green) !important;
-}
-
-.hr-button.disconnected {
   background: linear-gradient(145deg, var(--accent-red), var(--accent-red-dark)) !important;
   box-shadow: 0 0 15px var(--glow-red) !important;
 }
 
 .treadmill-button.connected {
-  background: linear-gradient(145deg, #0288d1, #01579b) !important;
-  box-shadow: 0 0 20px rgba(2, 136, 209, 0.4) !important;
+  background: linear-gradient(145deg, var(--accent-green), var(--accent-green-dark)) !important;
+  box-shadow: 0 0 20px var(--glow-green) !important;
 }
 
-.treadmill-button.disconnected {
+.sensor-button.disconnected {
   background: rgba(255, 255, 255, 0.08) !important;
   border: 1px solid var(--border-subtle) !important;
+  box-shadow: none !important;
 }
 
-.treadmill-button.disconnected:hover {
+.sensor-button.disconnected:hover {
   background: rgba(255, 255, 255, 0.15) !important;
 }
 
 .hr-icon,
 .treadmill-icon,
-.power-icon {
-  color: white !important;
+.power-icon,
+.location-icon {
+  color: var(--text-secondary) !important;
   font-size: 2rem !important;
 }
 
-.treadmill-icon,
-.power-icon {
-  color: var(--text-secondary) !important;
-}
-
+.hr-icon.pulse,
 .treadmill-icon.active,
-.power-icon.active {
+.power-icon.active,
+.location-icon.active {
   color: white !important;
 }
 
@@ -220,8 +214,8 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem 1.25rem;
-  gap: 1.5rem;
+  padding: 0.5rem 1.25rem;
+  gap: 0.75rem;
   max-width: 800px;
   margin: 0 auto;
   width: 100%;
@@ -231,15 +225,15 @@ body {
 .data-display {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  grid-auto-rows: 8rem;
-  gap: 1.15rem;
+  grid-auto-rows: 4.6rem;
+  gap: 0.35rem;
   width: 100%;
   max-width: 720px;
   margin: 0 auto;
 }
 
 .metric-card {
-  padding: 1.25rem 1rem;
+  padding: 0.15rem 0.25rem;
   background: var(--bg-card);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -271,7 +265,7 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--text-muted);
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.1rem;
 }
 
 .metric-value-container {
@@ -283,7 +277,7 @@ body {
 
 .metric-value {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 2.75rem;
+  font-size: 1.8rem;
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1;
@@ -317,13 +311,13 @@ body {
 }
 
 .metric-unit {
-  font-size: 0.85rem;
+  font-size: 0.7rem;
   color: var(--text-secondary);
   font-weight: 500;
 }
 
 .timer-value {
-  font-size: 2.75rem;
+  font-size: 1.8rem;
   letter-spacing: 0.05em;
 }
 
@@ -458,21 +452,21 @@ body {
   }
 
   .data-display {
-    grid-auto-rows: 6rem;
-    gap: 0.5rem;
+    grid-auto-rows: 4.4rem;
+    gap: 0.35rem;
   }
 
   .metric-card {
-    padding: 0.75rem 0.5rem;
+    padding: 0.15rem 0.25rem;
   }
 
   .metric-label {
-    margin-bottom: 0.2rem;
+    margin-bottom: 0.1rem;
   }
 
   .metric-value,
   .timer-value {
-    font-size: 1.8rem;
+    font-size: 1.65rem;
   }
 
   .recording-controls {
@@ -516,21 +510,22 @@ body {
 
   .data-display {
     grid-template-columns: repeat(2, 1fr);
-    gap: 0.4rem;
+    grid-auto-rows: 4rem;
+    gap: 0.25rem;
   }
 
   .metric-card {
-    padding: 0.5rem;
+    padding: 0.1rem;
   }
   
   .metric-label {
     font-size: 0.65rem;
-    margin-bottom: 0.15rem;
+    margin-bottom: 0.05rem;
   }
 
   .metric-value,
   .timer-value {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
   }
   
   .metric-unit {
