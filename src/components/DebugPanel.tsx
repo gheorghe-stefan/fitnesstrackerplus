@@ -9,6 +9,9 @@ export const DebugPanel: React.FC = () => {
     const [incline, setIncline] = useState<number>(0);
     const [power, setPower] = useState<number>(200);
     const [cadence, setCadence] = useState<number>(90);
+    const [lat, setLat] = useState<number>(0);
+    const [lng, setLng] = useState<number>(0);
+    const [alt, setAlt] = useState<number>(0);
     const [isOpen, setIsOpen] = useState<boolean>(true);
 
     if (!SensorManager.UseVirtualSensors) {
@@ -62,6 +65,27 @@ export const DebugPanel: React.FC = () => {
         VirtualSensors.PowerSensor.setValue({ power: VirtualSensors.TargetPower, cadence: val });
     };
 
+    const handleLatChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = parseFloat(e.target.value);
+        setLat(val);
+        VirtualSensors.TargetLatitude = val;
+        VirtualSensors.LocationSensor.setValue({ latitude: val, longitude: VirtualSensors.TargetLongitude, altitude: VirtualSensors.TargetAltitude });
+    };
+
+    const handleLngChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = parseFloat(e.target.value);
+        setLng(val);
+        VirtualSensors.TargetLongitude = val;
+        VirtualSensors.LocationSensor.setValue({ latitude: VirtualSensors.TargetLatitude, longitude: val, altitude: VirtualSensors.TargetAltitude });
+    };
+
+    const handleAltChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = parseFloat(e.target.value);
+        setAlt(val);
+        VirtualSensors.TargetAltitude = val;
+        VirtualSensors.LocationSensor.setValue({ latitude: VirtualSensors.TargetLatitude, longitude: VirtualSensors.TargetLongitude, altitude: val });
+    };
+
     return (
         <div className={`debug-panel ${isOpen ? 'open' : 'closed'}`}>
             <div className="debug-header" onClick={() => setIsOpen(!isOpen)}>
@@ -86,15 +110,20 @@ export const DebugPanel: React.FC = () => {
                         <input type="range" min="0" max="1000" step="5" value={power} onChange={handlePowerChange} />
                     </div>
                     <div className="debug-row">
-                        <label>Cadence (rpm): {cadence}</label>
-                        <input type="range" min="0" max="150" step="1" value={cadence} onChange={handleCadenceChange} />
+                        <label>Cadence (RPM): {cadence}</label>
+                        <input type="range" min="0" max="200" value={cadence} onChange={handleCadenceChange} />
                     </div>
-                    
-                    <div className="debug-future-section">
-                        <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '10px' }}>Future Mocks:</p>
-                        <div style={{ display: 'flex', gap: '5px' }}>
-                            <button disabled style={{ fontSize: '0.65rem' }}>GPS</button>
-                        </div>
+                    <div className="debug-row">
+                        <label>Latitude: {lat.toFixed(4)}</label>
+                        <input type="range" min="-90" max="90" step="0.0001" value={lat} onChange={handleLatChange} />
+                    </div>
+                    <div className="debug-row">
+                        <label>Longitude: {lng.toFixed(4)}</label>
+                        <input type="range" min="-180" max="180" step="0.0001" value={lng} onChange={handleLngChange} />
+                    </div>
+                    <div className="debug-row">
+                        <label>Altitude (m): {alt.toFixed(1)}</label>
+                        <input type="range" min="-100" max="10000" step="0.5" value={alt} onChange={handleAltChange} />
                     </div>
                 </div>
             )}

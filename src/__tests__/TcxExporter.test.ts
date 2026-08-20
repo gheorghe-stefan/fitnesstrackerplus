@@ -54,7 +54,7 @@ describe('TcxExporter', () => {
     expect(tcx).toContain('&quot;hard&quot;');
   });
 
-  it('exports all possible widget metrics including Cadence and Power into TCX', () => {
+  it('exports all possible widget metrics including Cadence, Power, and GPS into TCX', () => {
     const trackPoints: TrackPoint[] = [];
     const baseTime = new Date('2026-08-07T10:00:00Z').getTime();
     
@@ -68,6 +68,8 @@ describe('TcxExporter', () => {
         inclination: 4.5,
         cadence: 90 + i,
         power: 200 + i,
+        lat: 45.0 + (i * 0.0001),
+        lng: 23.0 + (i * 0.0001),
       });
     }
 
@@ -86,5 +88,11 @@ describe('TcxExporter', () => {
     expect(tcx).toContain('<TPX xmlns="http://www.garmin.com/xmlschemas/ActivityExtension/v2">');
     expect(tcx).toContain('<Watts>200</Watts>');
     expect(tcx).toContain('<Watts>209</Watts>');
+
+    // Verify GPS Position
+    expect(tcx).toContain('<Position>');
+    expect(tcx).toContain('<LatitudeDegrees>45.000000</LatitudeDegrees>');
+    expect(tcx).toContain('<LongitudeDegrees>23.000000</LongitudeDegrees>');
+    expect(tcx).toContain('<LatitudeDegrees>45.000900</LatitudeDegrees>');
   });
 });

@@ -1,6 +1,6 @@
 import React from 'react';
 import { IconButton, Tooltip, Button } from '@mui/material';
-import { MonitorHeart, HeartBroken, DirectionsRun, Bolt } from '@mui/icons-material';
+import { MonitorHeart, HeartBroken, DirectionsRun, Bolt, SatelliteAlt } from '@mui/icons-material';
 import { StravaAuthentication } from '../strava/StravaModels';
 import stravaConnectBtn from '../assets/strava/btn_connect_orange.png';
 
@@ -14,6 +14,9 @@ export interface HeaderProps {
   powerName?: string | null;
   onConnectPower?: () => void;
   onDisconnectPower?: () => void;
+  locationName?: string | null;
+  onConnectLocation?: () => void;
+  onDisconnectLocation?: () => void;
   stravaAuth?: StravaAuthentication | null;
   onConnectStrava?: () => void;
   onDisconnectStrava?: () => void;
@@ -33,6 +36,9 @@ export const Header: React.FC<HeaderProps> = ({
   powerName = null,
   onConnectPower,
   onDisconnectPower,
+  locationName = null,
+  onConnectLocation,
+  onDisconnectLocation,
   stravaAuth,
   onConnectStrava,
   onDisconnectStrava,
@@ -41,6 +47,7 @@ export const Header: React.FC<HeaderProps> = ({
   const isHrConnected = sensorName !== null;
   const isTreadmillConnected = treadmillName !== null;
   const isPowerConnected = powerName !== null;
+  const isLocationConnected = locationName !== null;
 
   return (
     <header className="App-header">
@@ -103,8 +110,8 @@ export const Header: React.FC<HeaderProps> = ({
           </Tooltip>
         ) : (
           <Tooltip title="Connect heart rate sensor">
-            <IconButton className="button hr-button disconnected" onClick={onConnect} id="btn-hr-connect">
-              <HeartBroken className="hr-icon" />
+            <IconButton className="button sensor-button disconnected" onClick={onConnect} id="btn-hr-connect">
+              <MonitorHeart className="hr-icon" />
             </IconButton>
           </Tooltip>
         )}
@@ -128,7 +135,7 @@ export const Header: React.FC<HeaderProps> = ({
             ) : (
               <Tooltip title="Connect treadmill (FTMS)">
                 <IconButton
-                  className="button treadmill-button disconnected"
+                  className="button sensor-button disconnected"
                   onClick={onConnectTreadmill}
                   id="btn-treadmill-connect"
                 >
@@ -153,17 +160,48 @@ export const Header: React.FC<HeaderProps> = ({
                   onClick={onDisconnectPower}
                   id="btn-power-disconnect"
                 >
-                  <Bolt className="power-icon active" />
+                  <Bolt className="power-icon active" style={{ color: '#fff' }} />
                 </IconButton>
               </Tooltip>
             ) : (
               <Tooltip title="Connect Power Meter (BLE)">
                 <IconButton
-                  className="button treadmill-button disconnected"
+                  className="button sensor-button disconnected"
                   onClick={onConnectPower}
                   id="btn-power-connect"
                 >
                   <Bolt className="power-icon" />
+                </IconButton>
+              </Tooltip>
+            )}
+          </>
+        )}
+
+        {/* Location Sensor Control */}
+        {onConnectLocation && onDisconnectLocation && (
+          <>
+            {isLocationConnected && (
+              <span className="sensor-name location-name" style={{ background: 'rgba(33, 150, 243, 0.15)', borderColor: 'rgba(33, 150, 243, 0.35)', color: '#2196f3' }}>{locationName}</span>
+            )}
+            {isLocationConnected ? (
+              <Tooltip title={`Disconnect GPS (${locationName})`}>
+                <IconButton
+                  className="button location-button connected"
+                  style={{ background: 'linear-gradient(145deg, #2196f3, #1976d2)', boxShadow: '0 0 20px rgba(33, 150, 243, 0.4)' }}
+                  onClick={onDisconnectLocation}
+                  id="btn-location-disconnect"
+                >
+                  <SatelliteAlt className="location-icon active" style={{ color: '#fff' }} />
+                </IconButton>
+              </Tooltip>
+            ) : (
+              <Tooltip title="Enable GPS Location">
+                <IconButton
+                  className="button sensor-button disconnected"
+                  onClick={onConnectLocation}
+                  id="btn-location-connect"
+                >
+                  <SatelliteAlt className="location-icon" />
                 </IconButton>
               </Tooltip>
             )}

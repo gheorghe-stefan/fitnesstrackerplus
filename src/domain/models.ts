@@ -11,6 +11,14 @@ export interface TrackPoint {
   readonly ele?: number;
   readonly cadence?: number;
   readonly power?: number;
+  readonly lat?: number;
+  readonly lng?: number;
+}
+
+export interface LocationData {
+  latitude: number;
+  longitude: number;
+  altitude: number;
 }
 
 /**
