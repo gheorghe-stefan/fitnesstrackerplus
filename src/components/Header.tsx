@@ -1,13 +1,17 @@
 import React from 'react';
 import { IconButton, Tooltip, Button } from '@mui/material';
-import { MonitorHeart, HeartBroken, DirectionsRun, Bolt, SatelliteAlt } from '@mui/icons-material';
+import { MonitorHeart, DirectionsRun, Bolt, SatelliteAlt } from '@mui/icons-material';
 import { StravaAuthentication } from '../strava/StravaModels';
+import { SensorMenuPopover, SensorDeviceInfo } from './SensorMenuPopover';
 import stravaConnectBtn from '../assets/strava/btn_connect_orange.png';
 
 export interface HeaderProps {
   sensorName: string | null;
   onConnect: () => void;
   onDisconnect: () => void;
+  hrDevices?: Array<{ id: string; name: string; heartRate: number; isActive: boolean }>;
+  onSelectActiveHr?: (id: string) => void;
+  onDisconnectHrDevice?: (id: string) => void;
   treadmillName?: string | null;
   onConnectTreadmill?: () => void;
   onDisconnectTreadmill?: () => void;
@@ -30,6 +34,9 @@ export const Header: React.FC<HeaderProps> = ({
   sensorName,
   onConnect,
   onDisconnect,
+  hrDevices = [],
+  onSelectActiveHr,
+  onDisconnectHrDevice,
   treadmillName = null,
   onConnectTreadmill,
   onDisconnectTreadmill,
@@ -99,11 +106,28 @@ export const Header: React.FC<HeaderProps> = ({
         )}
 
         {/* Heart Rate Sensor Control */}
-        {isHrConnected && (
+        {isHrConnected && hrDevices && hrDevices.length > 0 ? (
+          <SensorMenuPopover
+            categoryTitle="Heart Rate Sources"
+            activeColor="var(--accent-red)"
+            devices={hrDevices.map((d): SensorDeviceInfo => ({
+              id: d.id,
+              name: d.name,
+              displayValue: d.heartRate > 0 ? `${d.heartRate} bpm` : '-- bpm',
+              isActive: d.isActive,
+            }))}
+            activeDeviceName={sensorName}
+            onSelectActive={onSelectActiveHr || (() => {})}
+            onDisconnectDevice={onDisconnectHrDevice || onDisconnect}
+            onConnectNew={onConnect}
+            onDisconnectAll={onDisconnect}
+          />
+        ) : isHrConnected ? (
           <span className="sensor-name">{sensorName}</span>
-        )}
+        ) : null}
+
         {isHrConnected ? (
-          <Tooltip title={`Disconnect HR (${sensorName})`}>
+          <Tooltip title={`Heart Rate Connected (${sensorName})`}>
             <IconButton className="button hr-button connected" onClick={onDisconnect} id="btn-hr-disconnect">
               <MonitorHeart className="hr-icon pulse" />
             </IconButton>

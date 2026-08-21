@@ -38,8 +38,10 @@ export function useTreadmillSensor(): TreadmillSensorState & TreadmillSensorActi
       const sensor = await sensorManagerRef.current.SearchTreadmillSensor();
       setTreadmillName(sensor.name);
       setIsTreadmillConnected(true);
+      console.log(`[Treadmill Sensor] Connected to: ${sensor.name}`);
 
       sensor.onDisconnected = () => {
+        console.log(`[Treadmill Sensor] Disconnected (device event)`);
         setTreadmillName(null);
         setTreadmillData(DEFAULT_TREADMILL_DATA);
         setIsTreadmillConnected(false);
@@ -49,7 +51,7 @@ export function useTreadmillSensor(): TreadmillSensorState & TreadmillSensorActi
         setTreadmillData(data);
       });
     } catch (error) {
-      console.error('Failed to connect Treadmill sensor:', error);
+      console.error('[Treadmill Sensor] Failed to connect:', error);
       setTreadmillName(null);
       setTreadmillData(DEFAULT_TREADMILL_DATA);
       setIsTreadmillConnected(false);
@@ -57,6 +59,7 @@ export function useTreadmillSensor(): TreadmillSensorState & TreadmillSensorActi
   }, []);
 
   const disconnectTreadmill = useCallback(() => {
+    console.log('[Treadmill Sensor] Disconnecting manually');
     sensorManagerRef.current.TreadmillSensor?.disconnect();
     setTreadmillName(null);
     setTreadmillData(DEFAULT_TREADMILL_DATA);
