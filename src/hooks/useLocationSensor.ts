@@ -17,22 +17,25 @@ export function useLocationSensor() {
 
       setLocationName("GPS Location");
       setIsLocationConnected(true);
+      console.log(`[Location Sensor] GPS tracking started`);
 
       // Depending on if the sensor supports onDisconnected
       if (sensor.onDisconnected) {
         sensor.onDisconnected = () => {
+          console.log(`[Location Sensor] GPS disconnected`);
           setLocationName(null);
           setIsLocationConnected(false);
           setLocationData(undefined);
         };
       }
     } catch (error) {
-      console.error('Error connecting to location sensor:', error);
+      console.error('[Location Sensor] Error connecting to location sensor:', error);
       alert('Error: ' + error);
     }
   }, []);
 
   const disconnectLocation = useCallback(() => {
+    console.log('[Location Sensor] GPS tracking stopped manually');
     const sensor = sensorManager.current.LocationSensor;
     if (sensor) {
       if ((sensor as any).stop) (sensor as any).stop();

@@ -105,6 +105,196 @@ body {
   white-space: nowrap;
 }
 
+/* ===== SENSOR PILL & MULTI-DEVICE POPOVER ===== */
+.sensor-name-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-family: inherit;
+  color: var(--text-primary);
+  padding: 0.3rem 0.65rem 0.3rem 0.85rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sensor-name-pill:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.sensor-pill-text {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sensor-pill-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #fff;
+  padding: 0.1rem 0.4rem;
+  border-radius: 10px;
+  line-height: 1;
+}
+
+.sensor-pill-chevron {
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+}
+
+.sensor-popover-container {
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.sensor-popover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.2rem 0.4rem 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sensor-popover-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.sensor-popover-count {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0.15rem 0.5rem;
+  border-radius: 10px;
+}
+
+.sensor-popover-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.sensor-device-item {
+  display: flex;
+  align-items: center;
+  padding: 0.55rem 0.65rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  gap: 0.4rem;
+}
+
+.sensor-device-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.sensor-device-item.active {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.sensor-device-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-right: 0.75rem;
+}
+
+.sensor-device-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sensor-device-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.sensor-device-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.active-tag {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.15rem 0.45rem;
+  border: 1px solid;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.sensor-popover-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sensor-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.sensor-action-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.sensor-action-btn.add-btn {
+  color: var(--accent-green-light);
+}
+
+.sensor-action-btn.add-btn:hover {
+  background: rgba(124, 179, 66, 0.15);
+}
+
+.sensor-action-btn.disconnect-all-btn {
+  color: var(--text-muted);
+}
+
+.sensor-action-btn.disconnect-all-btn:hover {
+  color: #ff4d6d;
+  background: rgba(255, 77, 109, 0.12);
+}
+
 /* ===== HR & TREADMILL SENSOR BUTTONS ===== */
 .hr-button,
 .treadmill-button {

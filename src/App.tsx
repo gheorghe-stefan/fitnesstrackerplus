@@ -37,7 +37,16 @@ const defaultExporter = new TcxExporter();
  * All business logic lives in hooks and services.
  */
 const App: React.FC = () => {
-  const { sensorName, heartRate, isConnected, connect, disconnect } = useHeartRateSensor();
+  const {
+    sensorName,
+    heartRate,
+    isConnected,
+    devices: hrDevices,
+    connect,
+    disconnect,
+    disconnectDevice: disconnectHrDevice,
+    setActiveDevice: setActiveHrDevice,
+  } = useHeartRateSensor();
   const {
     treadmillName,
     treadmillData,
@@ -128,6 +137,9 @@ const App: React.FC = () => {
           sensorName={sensorName}
           onConnect={connect}
           onDisconnect={disconnect}
+          hrDevices={hrDevices}
+          onSelectActiveHr={setActiveHrDevice}
+          onDisconnectHrDevice={disconnectHrDevice}
           treadmillName={treadmillName}
           onConnectTreadmill={connectTreadmill}
           onDisconnectTreadmill={disconnectTreadmill}
