@@ -37,7 +37,7 @@ export function useStrava(): UseStravaResult {
             const stored = loadStravaAccounts();
             if (!stored.accounts || stored.accounts.length === 0) return;
 
-            const parsedAccounts: StravaAuthentication[] = [];
+            let parsedAccounts: StravaAuthentication[] = [];
             for (const item of stored.accounts) {
                 try {
                     const auth = StravaAuthentication.fromJSON(item);
