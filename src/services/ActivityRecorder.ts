@@ -47,7 +47,7 @@ export class ActivityRecorder implements IRecorder {
     });
   }
 
-  restoreSession(state: RecordingState, trackPoints: TrackPoint[]): void {
+  restoreSession(state: RecordingState, trackPoints: ReadonlyArray<TrackPoint>): void {
     this._state = state;
     this._trackPoints = [...trackPoints];
   }

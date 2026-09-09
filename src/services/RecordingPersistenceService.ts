@@ -9,7 +9,7 @@ export interface PersistedSession {
   elevationGain: number;
   recordedDistanceMeters: number;
   simulatedAltitude: number;
-  trackPoints: TrackPoint[];
+  trackPoints: ReadonlyArray<TrackPoint>;
 }
 
 const STORAGE_KEY = 'ftmp_active_recording_session_v1';

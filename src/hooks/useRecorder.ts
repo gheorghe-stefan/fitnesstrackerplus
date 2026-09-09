@@ -150,18 +150,20 @@ export function useRecorder(): RecorderState & RecorderActions {
       const currentGain = Number(cumulativeGainRef.current.toFixed(1));
       setElevationGain(currentGain);
 
-      // Auto-save session to localStorage on every tick
-      recordingPersistenceService.saveSession({
-        version: 1,
-        recordingState: RecordingState.Recording,
-        startTimestamp: startTimestampRef.current,
-        lastUpdatedTimestamp: Date.now(),
-        elapsedSeconds: newElapsed,
-        elevationGain: currentGain,
-        recordedDistanceMeters: currentDistanceRef.current,
-        simulatedAltitude: simulatedAltitudeRef.current,
-        trackPoints: [...recorderRef.current.trackPoints],
-      });
+      // Auto-save full session to localStorage periodically (every 30s) to prevent memory churn & OOM
+      if (newElapsed % 30 === 0) {
+        recordingPersistenceService.saveSession({
+          version: 1,
+          recordingState: RecordingState.Recording,
+          startTimestamp: startTimestampRef.current,
+          lastUpdatedTimestamp: Date.now(),
+          elapsedSeconds: newElapsed,
+          elevationGain: currentGain,
+          recordedDistanceMeters: currentDistanceRef.current,
+          simulatedAltitude: simulatedAltitudeRef.current,
+          trackPoints: recorderRef.current.trackPoints,
+        });
+      }
     });
   }, [stopTimer]);
 

@@ -1,6 +1,13 @@
 {
   "short_name": "FitnessTracker+",
-  "name": "FitnessTracker+",
+  "name": "FitnessTracker+ Workout Tracker",
+  "id": "/fitnesstrackerplus/",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#1a1a2e",
+  "background_color": "#1a1a2e",
   "icons": [
     {
       "src": "favicon.ico",
@@ -10,16 +17,14 @@
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
-  ],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#1a1a2e",
-  "background_color": "#1a1a2e"
+  ]
 }
