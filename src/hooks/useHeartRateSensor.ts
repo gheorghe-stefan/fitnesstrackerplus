@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { SensorManager } from '../sensors/SensorManager';
 import { ISensor } from '../domain/ISensor';
 import { liveSensorRegistry } from '../services/LiveSensorRegistry';
@@ -167,6 +167,21 @@ export function useHeartRateSensor(): HeartRateSensorState & HeartRateSensorActi
   const sensorName = activeEntry ? activeEntry.name : null;
   const heartRate = activeEntry ? activeEntry.heartRate : 0;
   const isConnected = connectedMapRef.current.size > 0;
+
+  useEffect(() => {
+    const map = connectedMapRef.current;
+    return () => {
+      map.forEach((entry) => {
+        try {
+          entry.sensor.disconnect();
+        } catch {
+          // Ignore unmount error
+        }
+      });
+      map.clear();
+      liveSensorRegistry.clearHeartRate();
+    };
+  }, []);
 
   return {
     sensorName,

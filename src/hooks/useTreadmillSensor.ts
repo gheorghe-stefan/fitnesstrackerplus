@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { SensorManager } from '../sensors/SensorManager';
 import { TreadmillData } from '../domain/TreadmillData';
 import { liveSensorRegistry } from '../services/LiveSensorRegistry';
@@ -70,6 +70,12 @@ export function useTreadmillSensor(): TreadmillSensorState & TreadmillSensorActi
     setIsTreadmillConnected(false);
     liveSensorRegistry.clearTreadmill();
   }, []);
+
+  useEffect(() => {
+    return () => {
+      disconnectTreadmill();
+    };
+  }, [disconnectTreadmill]);
 
   return {
     treadmillName,

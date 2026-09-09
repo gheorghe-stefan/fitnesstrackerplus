@@ -99,9 +99,9 @@ ${formattedTrackpoints.join('\n')}
             </Position>` : '';
 
     return `          <Trackpoint>
-            <Time>${tp.timestamp.toISOString()}</Time>
+            <Time>${tp.timestamp.toISOString()}</Time>${positionBlock}
             <AltitudeMeters>${ele}</AltitudeMeters>
-            <DistanceMeters>${dist}</DistanceMeters>${positionBlock}${hrBlock}${cadenceBlock}${powerBlock}
+            <DistanceMeters>${dist}</DistanceMeters>${hrBlock}${cadenceBlock}${powerBlock}
           </Trackpoint>`;
   }
 

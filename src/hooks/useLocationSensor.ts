@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { SensorManager } from '../sensors/SensorManager';
 import { LocationData } from '../domain/models';
 import { liveSensorRegistry } from '../services/LiveSensorRegistry';
@@ -50,6 +50,12 @@ export function useLocationSensor() {
       liveSensorRegistry.clearLocation();
     }
   }, []);
+
+  useEffect(() => {
+    return () => {
+      disconnectLocation();
+    };
+  }, [disconnectLocation]);
 
   return {
     locationName,

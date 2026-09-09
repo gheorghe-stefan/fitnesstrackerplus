@@ -85,15 +85,16 @@ export function useRecorder(): RecorderState & RecorderActions {
 
       const liveData = liveSensorRegistry.getSnapshot();
       const overrideData = sensorDataRef.current;
+      // Prioritize live hardware data from LiveSensorRegistry so backgrounding never stalls on stale React state
       const currentData: Omit<TrackPoint, 'timestamp'> = {
-        hr: overrideData.hr !== undefined ? overrideData.hr : liveData.hr,
-        speed: overrideData.speed !== undefined ? overrideData.speed : liveData.speed,
-        inclination: overrideData.inclination !== undefined ? overrideData.inclination : liveData.inclination,
-        cadence: overrideData.cadence !== undefined ? overrideData.cadence : liveData.cadence,
-        power: overrideData.power !== undefined ? overrideData.power : liveData.power,
-        lat: overrideData.lat !== undefined ? overrideData.lat : liveData.lat,
-        lng: overrideData.lng !== undefined ? overrideData.lng : liveData.lng,
-        ele: overrideData.ele !== undefined ? overrideData.ele : liveData.ele,
+        hr: liveData.hr !== undefined ? liveData.hr : overrideData.hr,
+        speed: liveData.speed !== undefined ? liveData.speed : overrideData.speed,
+        inclination: liveData.inclination !== undefined ? liveData.inclination : overrideData.inclination,
+        cadence: liveData.cadence !== undefined ? liveData.cadence : overrideData.cadence,
+        power: liveData.power !== undefined ? liveData.power : overrideData.power,
+        lat: liveData.lat !== undefined ? liveData.lat : overrideData.lat,
+        lng: liveData.lng !== undefined ? liveData.lng : overrideData.lng,
+        ele: liveData.ele !== undefined ? liveData.ele : overrideData.ele,
       };
       const tmSpeed = currentData.speed ?? 0;
       const inclination = currentData.inclination ?? 0;
@@ -118,7 +119,7 @@ export function useRecorder(): RecorderState & RecorderActions {
       setRecordedDistanceMeters(currentDistanceRef.current);
       setCurrentSpeed(calculatedSpeedKmH);
 
-      // 2. Calculate Elevation Gain (Simulated & GPS)
+      // 2. Calculate Elevation Gain
       let treadmillDelta = 0;
       if (tmSpeed > 0) {
         treadmillDelta = stepDistanceMeters * (inclination / 100);
@@ -137,9 +138,14 @@ export function useRecorder(): RecorderState & RecorderActions {
         prevGpsAltRef.current = currentData.ele;
       }
 
-      // Accumulate True Elevation Gain (Only positive climbs count towards total gain)
-      if (treadmillDelta > 0) cumulativeGainRef.current += treadmillDelta;
-      if (gpsDelta > 0) cumulativeGainRef.current += gpsDelta;
+      // Accumulate True Elevation Gain:
+      // If running on a treadmill (tmSpeed > 0), strictly accumulate treadmill incline gain (prevents indoor GPS jitter).
+      // If moving outdoors via GPS (tmSpeed === 0), strictly accumulate real GPS ascent.
+      if (tmSpeed > 0) {
+        if (treadmillDelta > 0) cumulativeGainRef.current += treadmillDelta;
+      } else {
+        if (gpsDelta > 0) cumulativeGainRef.current += gpsDelta;
+      }
 
       recorderRef.current.addDataPoint({
         ...currentData,

@@ -40,8 +40,8 @@ ${trkpts}
   }
 
   private formatTrackPoint(tp: TrackPoint): string {
-    const lat = 0;
-    const lon = 0;
+    const lat = tp.lat !== undefined ? tp.lat.toFixed(6) : '0';
+    const lon = tp.lng !== undefined ? tp.lng.toFixed(6) : '0';
     const eleTag = tp.ele !== undefined ? `\n        <ele>${tp.ele}</ele>` : '';
     const extensions = this.formatExtensions(tp);
 

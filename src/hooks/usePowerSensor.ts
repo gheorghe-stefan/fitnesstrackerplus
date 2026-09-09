@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { SensorManager } from '../sensors/SensorManager';
 import { PowerData } from '../domain/PowerData';
 import { liveSensorRegistry } from '../services/LiveSensorRegistry';
@@ -45,6 +45,12 @@ export function usePowerSensor() {
       liveSensorRegistry.clearPower();
     }
   }, []);
+
+  useEffect(() => {
+    return () => {
+      disconnectPower();
+    };
+  }, [disconnectPower]);
 
   return {
     powerName,

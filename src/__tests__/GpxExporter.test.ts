@@ -85,13 +85,12 @@ describe('GpxExporter', () => {
     expect(gpx).not.toContain('<gpxtpx:speed>');
   });
 
-  it('should use first track point timestamp for metadata time', () => {
+  it('should format track points with real GPS coordinates', () => {
     const trackPoints: TrackPoint[] = [
-      { timestamp: new Date('2025-06-15T08:30:00Z'), hr: 65 },
-      { timestamp: new Date('2025-06-15T08:30:01Z'), hr: 67 },
+      { timestamp: new Date('2025-01-01T10:00:00Z'), lat: 45.123456, lng: 9.654321, hr: 140 },
     ];
     const gpx = exporter.export(trackPoints);
-    // The metadata <time> should be the first track point's timestamp
-    expect(gpx).toContain('<time>2025-06-15T08:30:00.000Z</time>');
+    expect(gpx).toContain('<trkpt lat="45.123456" lon="9.654321">');
+    expect(gpx).toContain('<gpxtpx:hr>140</gpxtpx:hr>');
   });
 });
