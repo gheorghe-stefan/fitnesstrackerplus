@@ -1,6 +1,9 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { RecordingState, TrackPoint } from '../domain/models';
 import { ActivityRecorder } from '../services/ActivityRecorder';
+import { BackgroundKeepAliveService } from '../services/BackgroundKeepAliveService';
+import { BackgroundTimer } from '../services/BackgroundTimer';
+import { liveSensorRegistry } from '../services/LiveSensorRegistry';
 
 function getDistanceMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371e3;
@@ -48,22 +51,43 @@ export function useRecorder(): RecorderState & RecorderActions {
   const prevGpsAltRef = useRef<number | null>(null);
   const prevLatRef = useRef<number | null>(null);
   const prevLngRef = useRef<number | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const keepAliveRef = useRef(new BackgroundKeepAliveService());
+  const timerRef = useRef(new BackgroundTimer());
+  const lastTickTimeRef = useRef<number | null>(null);
   const sensorDataRef = useRef<Omit<TrackPoint, 'timestamp'>>({});
 
   const stopTimer = useCallback(() => {
-    if (intervalRef.current !== null) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
+    timerRef.current.stop();
+    lastTickTimeRef.current = null;
   }, []);
 
   const startTimer = useCallback(() => {
     stopTimer();
-    intervalRef.current = setInterval(() => {
+    lastTickTimeRef.current = performance.now();
+    timerRef.current.start(() => {
+      const now = performance.now();
+      const deltaSeconds = lastTickTimeRef.current !== null
+        ? (now - lastTickTimeRef.current) / 1000
+        : 1;
+      lastTickTimeRef.current = now;
+
+      // Safe clamp to avoid extreme jumps if system sleeps/hibernates
+      const effectiveDelta = Math.max(0.1, Math.min(deltaSeconds, 10));
+
       setElapsedSeconds(prev => prev + 1);
 
-      const currentData = sensorDataRef.current;
+      const liveData = liveSensorRegistry.getSnapshot();
+      const overrideData = sensorDataRef.current;
+      const currentData: Omit<TrackPoint, 'timestamp'> = {
+        hr: overrideData.hr !== undefined ? overrideData.hr : liveData.hr,
+        speed: overrideData.speed !== undefined ? overrideData.speed : liveData.speed,
+        inclination: overrideData.inclination !== undefined ? overrideData.inclination : liveData.inclination,
+        cadence: overrideData.cadence !== undefined ? overrideData.cadence : liveData.cadence,
+        power: overrideData.power !== undefined ? overrideData.power : liveData.power,
+        lat: overrideData.lat !== undefined ? overrideData.lat : liveData.lat,
+        lng: overrideData.lng !== undefined ? overrideData.lng : liveData.lng,
+        ele: overrideData.ele !== undefined ? overrideData.ele : liveData.ele,
+      };
       const tmSpeed = currentData.speed ?? 0;
       const inclination = currentData.inclination ?? 0;
       
@@ -72,11 +96,11 @@ export function useRecorder(): RecorderState & RecorderActions {
       let calculatedSpeedKmH = tmSpeed;
 
       if (tmSpeed > 0) {
-        stepDistanceMeters = (tmSpeed / 3.6) * 1;
+        stepDistanceMeters = (tmSpeed / 3.6) * effectiveDelta;
       } else if (currentData.lat !== undefined && currentData.lng !== undefined) {
         if (prevLatRef.current !== null && prevLngRef.current !== null) {
           stepDistanceMeters = getDistanceMeters(prevLatRef.current, prevLngRef.current, currentData.lat, currentData.lng);
-          calculatedSpeedKmH = (stepDistanceMeters / 1) * 3.6;
+          calculatedSpeedKmH = effectiveDelta > 0 ? (stepDistanceMeters / effectiveDelta) * 3.6 : 0;
         }
       }
 
@@ -90,8 +114,7 @@ export function useRecorder(): RecorderState & RecorderActions {
       // 2. Calculate Elevation Gain (Simulated & GPS)
       let treadmillDelta = 0;
       if (tmSpeed > 0) {
-        const treadmillStepDistance = (tmSpeed / 3.6) * 1;
-        treadmillDelta = treadmillStepDistance * (inclination / 100);
+        treadmillDelta = stepDistanceMeters * (inclination / 100);
         simulatedAltitudeRef.current += treadmillDelta;
       }
       
@@ -118,7 +141,7 @@ export function useRecorder(): RecorderState & RecorderActions {
       });
 
       setElevationGain(Number(cumulativeGainRef.current.toFixed(1)));
-    }, 1000);
+    });
   }, [stopTimer]);
 
   const start = useCallback(() => {
@@ -131,24 +154,28 @@ export function useRecorder(): RecorderState & RecorderActions {
     prevGpsAltRef.current = null;
     setElevationGain(0.0);
     setRecordedDistanceMeters(0.0);
+    keepAliveRef.current.acquire();
     startTimer();
   }, [startTimer]);
 
   const pause = useCallback(() => {
     recorderRef.current.pause();
     setRecordingState(RecordingState.Paused);
+    keepAliveRef.current.release();
     stopTimer();
   }, [stopTimer]);
 
   const resume = useCallback(() => {
     recorderRef.current.resume();
     setRecordingState(RecordingState.Recording);
+    keepAliveRef.current.acquire();
     startTimer();
   }, [startTimer]);
 
   const stop = useCallback(() => {
     recorderRef.current.stop();
     setRecordingState(RecordingState.Stopped);
+    keepAliveRef.current.release();
     stopTimer();
   }, [stopTimer]);
 
@@ -163,7 +190,9 @@ export function useRecorder(): RecorderState & RecorderActions {
     setElevationGain(0.0);
     setRecordedDistanceMeters(0.0);
     sensorDataRef.current = {};
-  }, []);
+    keepAliveRef.current.release();
+    stopTimer();
+  }, [stopTimer]);
 
   const getTrackPoints = useCallback(() => {
     return recorderRef.current.trackPoints;
@@ -175,8 +204,13 @@ export function useRecorder(): RecorderState & RecorderActions {
 
   // Cleanup on unmount
   useEffect(() => {
-    return () => stopTimer();
-  }, [stopTimer]);
+    const keepAlive = keepAliveRef.current;
+    const timer = timerRef.current;
+    return () => {
+      timer.destroy();
+      keepAlive.destroy();
+    };
+  }, []);
 
   return {
     recordingState,

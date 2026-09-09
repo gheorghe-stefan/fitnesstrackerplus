@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { SensorManager } from '../sensors/SensorManager';
 import { ISensor } from '../domain/ISensor';
+import { liveSensorRegistry } from '../services/LiveSensorRegistry';
 
 export interface HeartRateDeviceInfo {
   id: string;
@@ -57,6 +58,15 @@ export function useHeartRateSensor(): HeartRateSensorState & HeartRateSensorActi
     activeIdRef.current = currentActiveId;
     setActiveDeviceId(currentActiveId);
 
+    if (currentActiveId && connectedMapRef.current.has(currentActiveId)) {
+      const active = connectedMapRef.current.get(currentActiveId);
+      if (active && active.heartRate > 0) {
+        liveSensorRegistry.updateHeartRate(active.heartRate);
+      }
+    } else {
+      liveSensorRegistry.clearHeartRate();
+    }
+
     connectedMapRef.current.forEach((entry) => {
       list.push({
         id: entry.id,
@@ -107,6 +117,9 @@ export function useHeartRateSensor(): HeartRateSensorState & HeartRateSensorActi
         const currentEntry = connectedMapRef.current.get(deviceId);
         if (currentEntry) {
           currentEntry.heartRate = hr;
+          if (activeIdRef.current === deviceId && hr > 0) {
+            liveSensorRegistry.updateHeartRate(hr);
+          }
           syncState();
         }
       });

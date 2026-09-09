@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { SensorManager } from '../sensors/SensorManager';
 import { PowerData } from '../domain/PowerData';
+import { liveSensorRegistry } from '../services/LiveSensorRegistry';
 
 export function usePowerSensor() {
   const [powerName, setPowerName] = useState<string | null>(null);
@@ -12,6 +13,7 @@ export function usePowerSensor() {
     try {
       const sensor = await sensorManager.current.SearchPowerSensor();
       await sensor.start((data) => {
+        liveSensorRegistry.updatePower(data);
         setPowerData(data);
       });
 
@@ -24,9 +26,11 @@ export function usePowerSensor() {
         setPowerName(null);
         setIsPowerConnected(false);
         setPowerData(undefined);
+        liveSensorRegistry.clearPower();
       };
     } catch (error) {
       console.error('[Power Sensor] Error connecting to power sensor:', error);
+      liveSensorRegistry.clearPower();
     }
   }, []);
 
@@ -38,6 +42,7 @@ export function usePowerSensor() {
       setPowerName(null);
       setIsPowerConnected(false);
       setPowerData(undefined);
+      liveSensorRegistry.clearPower();
     }
   }, []);
 

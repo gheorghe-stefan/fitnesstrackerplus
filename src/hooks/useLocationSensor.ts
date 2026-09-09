@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { SensorManager } from '../sensors/SensorManager';
 import { LocationData } from '../domain/models';
+import { liveSensorRegistry } from '../services/LiveSensorRegistry';
 
 export function useLocationSensor() {
   const [locationName, setLocationName] = useState<string | null>(null);
@@ -12,6 +13,7 @@ export function useLocationSensor() {
     try {
       const sensor = await sensorManager.current.SearchLocationSensor();
       await sensor.start((data) => {
+        liveSensorRegistry.updateLocation(data);
         setLocationData(data);
       });
 
@@ -26,10 +28,12 @@ export function useLocationSensor() {
           setLocationName(null);
           setIsLocationConnected(false);
           setLocationData(undefined);
+          liveSensorRegistry.clearLocation();
         };
       }
     } catch (error) {
       console.error('[Location Sensor] Error connecting to location sensor:', error);
+      liveSensorRegistry.clearLocation();
       alert('Error: ' + error);
     }
   }, []);
@@ -43,6 +47,7 @@ export function useLocationSensor() {
       setLocationName(null);
       setIsLocationConnected(false);
       setLocationData(undefined);
+      liveSensorRegistry.clearLocation();
     }
   }, []);
 

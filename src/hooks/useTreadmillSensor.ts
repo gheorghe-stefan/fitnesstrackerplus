@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { SensorManager } from '../sensors/SensorManager';
 import { TreadmillData } from '../domain/TreadmillData';
+import { liveSensorRegistry } from '../services/LiveSensorRegistry';
 
 const DEFAULT_TREADMILL_DATA: TreadmillData = {
   speed: 0,
@@ -45,9 +46,11 @@ export function useTreadmillSensor(): TreadmillSensorState & TreadmillSensorActi
         setTreadmillName(null);
         setTreadmillData(DEFAULT_TREADMILL_DATA);
         setIsTreadmillConnected(false);
+        liveSensorRegistry.clearTreadmill();
       };
 
       await sensor.start((data: TreadmillData) => {
+        liveSensorRegistry.updateTreadmill(data);
         setTreadmillData(data);
       });
     } catch (error) {
@@ -55,6 +58,7 @@ export function useTreadmillSensor(): TreadmillSensorState & TreadmillSensorActi
       setTreadmillName(null);
       setTreadmillData(DEFAULT_TREADMILL_DATA);
       setIsTreadmillConnected(false);
+      liveSensorRegistry.clearTreadmill();
     }
   }, []);
 
@@ -64,6 +68,7 @@ export function useTreadmillSensor(): TreadmillSensorState & TreadmillSensorActi
     setTreadmillName(null);
     setTreadmillData(DEFAULT_TREADMILL_DATA);
     setIsTreadmillConnected(false);
+    liveSensorRegistry.clearTreadmill();
   }, []);
 
   return {
