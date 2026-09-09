@@ -70,8 +70,12 @@ const App: React.FC = () => {
   } = useLocationSensor();
   const {
     stravaAuth,
+    accounts: stravaAccounts,
+    activeAthleteId: activeStravaAthleteId,
     isConnecting: isStravaConnecting,
     connect: connectStrava,
+    selectAccount: selectStravaAccount,
+    removeAccount: removeStravaAccount,
     disconnect: disconnectStrava
   } = useStrava();
 
@@ -150,6 +154,10 @@ const App: React.FC = () => {
           onConnectLocation={connectLocation}
           onDisconnectLocation={disconnectLocation}
           stravaAuth={stravaAuth}
+          stravaAccounts={stravaAccounts}
+          activeStravaAthleteId={activeStravaAthleteId}
+          onSelectStravaAccount={selectStravaAccount}
+          onRemoveStravaAccount={removeStravaAccount}
           isStravaConnecting={isStravaConnecting}
           onConnectStrava={connectStrava}
           onDisconnectStrava={disconnectStrava}
@@ -195,6 +203,7 @@ const App: React.FC = () => {
           onSave={handleSave}
           onDiscard={handleDiscard}
           stravaAuth={stravaAuth}
+          stravaAccounts={stravaAccounts}
           trackPoints={getTrackPoints()}
         />
         <DebugPanel />

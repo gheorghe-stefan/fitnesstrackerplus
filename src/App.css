@@ -143,6 +143,33 @@ body {
   line-height: 1;
 }
 
+.strava-user-pill {
+  border-color: rgba(252, 76, 2, 0.4);
+}
+
+.strava-user-pill:hover {
+  border-color: #fc4c02;
+  background: rgba(252, 76, 2, 0.1);
+}
+
+.strava-pill-avatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.strava-account-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(252, 76, 2, 0.5);
+  margin-right: 0.4rem;
+  flex-shrink: 0;
+}
+
 .sensor-pill-chevron {
   color: var(--text-muted);
   transition: transform 0.2s ease;

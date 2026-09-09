@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -8,7 +8,11 @@ import {
   Button,
   LinearProgress,
   Box,
-  Typography
+  Typography,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel
 } from '@mui/material';
 import { Save, DeleteOutline, CloudUpload } from '@mui/icons-material';
 import { StravaAuthentication } from '../strava/StravaModels';
@@ -23,6 +27,7 @@ export interface SaveDialogProps {
   onSave: () => void;
   onDiscard: () => void;
   stravaAuth?: StravaAuthentication | null;
+  stravaAccounts?: StravaAuthentication[];
   trackPoints?: readonly TrackPoint[];
 }
 
@@ -37,18 +42,30 @@ export const SaveDialog: React.FC<SaveDialogProps> = ({
   onSave,
   onDiscard,
   stravaAuth,
+  stravaAccounts = [],
   trackPoints,
 }) => {
   const [uploading, setUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState<React.ReactNode>('');
   const [uploadComplete, setUploadComplete] = useState(false);
   const [uploadError, setUploadError] = useState(false);
+  const [selectedAthleteId, setSelectedAthleteId] = useState<number | null>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Sync selected athlete with active stravaAuth
+  useEffect(() => {
+    if (stravaAuth) {
+      setSelectedAthleteId(stravaAuth.athlete.id);
+    } else if (stravaAccounts.length > 0) {
+      setSelectedAthleteId(stravaAccounts[0].athlete.id);
+    }
+  }, [stravaAuth, stravaAccounts, open]);
 
   const defaultExporter = new TcxExporter();
 
   const handleStravaUpload = async () => {
-    if (!stravaAuth || !trackPoints || trackPoints.length === 0) return;
+    const targetAccount = stravaAccounts.find(a => a.athlete.id === selectedAthleteId) ?? stravaAuth;
+    if (!targetAccount || !trackPoints || trackPoints.length === 0) return;
     
     setUploading(true);
     setUploadMessage('Preparing upload...');
@@ -56,17 +73,26 @@ export const SaveDialog: React.FC<SaveDialogProps> = ({
     setUploadError(false);
     
     try {
+      let activeToken = targetAccount.access_token;
+      if (targetAccount.isTokenExpired()) {
+        setUploadMessage('Refreshing Strava access token...');
+        const refreshed = await StravaService.RefreshAccessToken(targetAccount.refresh_token, targetAccount.athlete);
+        if (refreshed) {
+          activeToken = refreshed.access_token;
+        }
+      }
+
       const tcxContent = defaultExporter.export(trackPoints);
-      // Convert string to ArrayBuffer for upload
       const encoder = new TextEncoder();
       const tcxBuffer = encoder.encode(tcxContent).buffer;
       
-      setUploadMessage('Uploading activity to Strava...');
+      const athleteName = `${targetAccount.athlete.firstname} ${targetAccount.athlete.lastname}`.trim();
+      setUploadMessage(`Uploading activity to Strava for ${athleteName}...`);
       
       const uploadResult = await StravaService.EnqueueActivityForUpload(
-        stravaAuth.access_token,
+        activeToken,
         tcxBuffer,
-        'Treadmill run',
+        'Workout',
         'Powered by FitnessTracker+',
         'tcx'
       );
@@ -81,7 +107,7 @@ export const SaveDialog: React.FC<SaveDialogProps> = ({
       setUploadMessage('Processing activity on Strava...');
       
       pollingRef.current = setInterval(async () => {
-        const status = await StravaService.CheckUploadStatus(stravaAuth.access_token, uploadResult.id_str);
+        const status = await StravaService.CheckUploadStatus(activeToken, uploadResult.id_str);
         if (status) {
           if (status.error) {
             setUploadMessage(`Error from Strava: ${status.error}`);
@@ -128,6 +154,8 @@ export const SaveDialog: React.FC<SaveDialogProps> = ({
     callback();
   };
 
+  const hasStrava = Boolean(stravaAuth || stravaAccounts.length > 0);
+
   return (
     <Dialog
       open={open}
@@ -138,10 +166,37 @@ export const SaveDialog: React.FC<SaveDialogProps> = ({
       <DialogTitle id="save-dialog-title">Save Activity?</DialogTitle>
       <DialogContent>
         {!uploading && !uploadComplete && !uploadError ? (
-          <DialogContentText id="save-dialog-description">
-            You recorded <strong>{trackPointCount}</strong> data point{trackPointCount !== 1 ? 's' : ''} over{' '}
-            <strong>{elapsedTime}</strong>. Would you like to save this activity?
-          </DialogContentText>
+          <>
+            <DialogContentText id="save-dialog-description">
+              You recorded <strong>{trackPointCount}</strong> data point{trackPointCount !== 1 ? 's' : ''} over{' '}
+              <strong>{elapsedTime}</strong>. Would you like to save this activity?
+            </DialogContentText>
+            {stravaAccounts.length > 1 && (
+              <Box sx={{ mt: 2, mb: 1 }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel id="strava-account-select-label" sx={{ color: 'rgba(255,255,255,0.7)' }}>Upload as Strava User</InputLabel>
+                  <Select
+                    labelId="strava-account-select-label"
+                    value={selectedAthleteId ?? ''}
+                    label="Upload as Strava User"
+                    onChange={(e) => setSelectedAthleteId(Number(e.target.value))}
+                    sx={{
+                      color: '#fff',
+                      '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.2)' },
+                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#FC4C02' },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#FC4C02' },
+                    }}
+                  >
+                    {stravaAccounts.map((a) => (
+                      <MenuItem key={a.athlete.id} value={a.athlete.id}>
+                        {a.athlete.firstname} {a.athlete.lastname}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+            )}
+          </>
         ) : (
           <Box sx={{ mt: 2 }}>
              <Typography variant="body1" gutterBottom>{uploadMessage}</Typography>
@@ -156,7 +211,7 @@ export const SaveDialog: React.FC<SaveDialogProps> = ({
         <Button onClick={() => cleanupAndClose(onSave)} color="primary" variant="outlined" startIcon={<Save />} id="btn-save" disabled={uploading}>
           Save TCX
         </Button>
-        {stravaAuth && (
+        {hasStrava && (
           <Button 
             onClick={handleStravaUpload} 
             color="secondary" 

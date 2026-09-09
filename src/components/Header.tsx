@@ -3,6 +3,7 @@ import { IconButton, Tooltip, Button } from '@mui/material';
 import { MonitorHeart, DirectionsRun, Bolt, SatelliteAlt } from '@mui/icons-material';
 import { StravaAuthentication } from '../strava/StravaModels';
 import { SensorMenuPopover, SensorDeviceInfo } from './SensorMenuPopover';
+import { StravaMenuPopover } from './StravaMenuPopover';
 import stravaConnectBtn from '../assets/strava/btn_connect_orange.png';
 
 export interface HeaderProps {
@@ -22,6 +23,10 @@ export interface HeaderProps {
   onConnectLocation?: () => void;
   onDisconnectLocation?: () => void;
   stravaAuth?: StravaAuthentication | null;
+  stravaAccounts?: StravaAuthentication[];
+  activeStravaAthleteId?: number | null;
+  onSelectStravaAccount?: (athleteId: number) => void;
+  onRemoveStravaAccount?: (athleteId: number) => void;
   onConnectStrava?: () => void;
   onDisconnectStrava?: () => void;
   isStravaConnecting?: boolean;
@@ -47,6 +52,10 @@ export const Header: React.FC<HeaderProps> = ({
   onConnectLocation,
   onDisconnectLocation,
   stravaAuth,
+  stravaAccounts = [],
+  activeStravaAthleteId,
+  onSelectStravaAccount,
+  onRemoveStravaAccount,
   onConnectStrava,
   onDisconnectStrava,
   isStravaConnecting = false,
@@ -73,7 +82,16 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Strava Control */}
         {onConnectStrava && onDisconnectStrava && (
           <div className="strava-header-control">
-            {stravaAuth ? (
+            {stravaAccounts && stravaAccounts.length > 0 ? (
+              <StravaMenuPopover
+                accounts={stravaAccounts}
+                activeAthleteId={activeStravaAthleteId ?? stravaAuth?.athlete.id ?? null}
+                onSelectAccount={onSelectStravaAccount || (() => {})}
+                onRemoveAccount={onRemoveStravaAccount || (() => {})}
+                onConnectNew={onConnectStrava}
+                onDisconnectAll={onDisconnectStrava}
+              />
+            ) : stravaAuth ? (
               <>
                 <span className="sensor-name strava-name">
                   Strava: {stravaAuth.athlete.firstname}
