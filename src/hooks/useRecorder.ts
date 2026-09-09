@@ -4,6 +4,7 @@ import { ActivityRecorder } from '../services/ActivityRecorder';
 import { BackgroundKeepAliveService } from '../services/BackgroundKeepAliveService';
 import { BackgroundTimer } from '../services/BackgroundTimer';
 import { liveSensorRegistry } from '../services/LiveSensorRegistry';
+import { recordingPersistenceService } from '../services/RecordingPersistenceService';
 
 function getDistanceMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371e3;
@@ -56,6 +57,10 @@ export function useRecorder(): RecorderState & RecorderActions {
   const lastTickTimeRef = useRef<number | null>(null);
   const sensorDataRef = useRef<Omit<TrackPoint, 'timestamp'>>({});
 
+  const startTimestampRef = useRef<number>(Date.now());
+  const elapsedSecondsRef = useRef<number>(0);
+  const hasRestoredRef = useRef(false);
+
   const stopTimer = useCallback(() => {
     timerRef.current.stop();
     lastTickTimeRef.current = null;
@@ -74,7 +79,9 @@ export function useRecorder(): RecorderState & RecorderActions {
       // Safe clamp to avoid extreme jumps if system sleeps/hibernates
       const effectiveDelta = Math.max(0.1, Math.min(deltaSeconds, 10));
 
-      setElapsedSeconds(prev => prev + 1);
+      elapsedSecondsRef.current += 1;
+      const newElapsed = elapsedSecondsRef.current;
+      setElapsedSeconds(newElapsed);
 
       const liveData = liveSensorRegistry.getSnapshot();
       const overrideData = sensorDataRef.current;
@@ -140,11 +147,53 @@ export function useRecorder(): RecorderState & RecorderActions {
         ele: Number(absoluteEle.toFixed(2)),
       });
 
-      setElevationGain(Number(cumulativeGainRef.current.toFixed(1)));
+      const currentGain = Number(cumulativeGainRef.current.toFixed(1));
+      setElevationGain(currentGain);
+
+      // Auto-save session to localStorage on every tick
+      recordingPersistenceService.saveSession({
+        version: 1,
+        recordingState: RecordingState.Recording,
+        startTimestamp: startTimestampRef.current,
+        lastUpdatedTimestamp: Date.now(),
+        elapsedSeconds: newElapsed,
+        elevationGain: currentGain,
+        recordedDistanceMeters: currentDistanceRef.current,
+        simulatedAltitude: simulatedAltitudeRef.current,
+        trackPoints: [...recorderRef.current.trackPoints],
+      });
     });
   }, [stopTimer]);
 
+  // Restore saved session on initial mount
+  useEffect(() => {
+    if (hasRestoredRef.current) return;
+    hasRestoredRef.current = true;
+
+    const saved = recordingPersistenceService.loadSession();
+    if (saved) {
+      console.log('[useRecorder] Restoring saved recording session:', saved);
+      recorderRef.current.restoreSession(saved.recordingState, saved.trackPoints);
+      setRecordingState(saved.recordingState);
+      setElapsedSeconds(saved.elapsedSeconds);
+      elapsedSecondsRef.current = saved.elapsedSeconds;
+      setElevationGain(saved.elevationGain);
+      setRecordedDistanceMeters(saved.recordedDistanceMeters);
+      simulatedAltitudeRef.current = saved.simulatedAltitude;
+      cumulativeGainRef.current = saved.elevationGain;
+      currentDistanceRef.current = saved.recordedDistanceMeters;
+      startTimestampRef.current = saved.startTimestamp;
+
+      if (saved.recordingState === RecordingState.Recording) {
+        keepAliveRef.current.acquire();
+        startTimer();
+      }
+    }
+  }, [startTimer]);
+
   const start = useCallback(() => {
+    startTimestampRef.current = Date.now();
+    elapsedSecondsRef.current = 0;
     recorderRef.current.start();
     setRecordingState(RecordingState.Recording);
     setElapsedSeconds(0);
@@ -154,6 +203,19 @@ export function useRecorder(): RecorderState & RecorderActions {
     prevGpsAltRef.current = null;
     setElevationGain(0.0);
     setRecordedDistanceMeters(0.0);
+
+    recordingPersistenceService.saveSession({
+      version: 1,
+      recordingState: RecordingState.Recording,
+      startTimestamp: startTimestampRef.current,
+      lastUpdatedTimestamp: Date.now(),
+      elapsedSeconds: 0,
+      elevationGain: 0.0,
+      recordedDistanceMeters: 0.0,
+      simulatedAltitude: BASE_ELEVATION_METERS,
+      trackPoints: [],
+    });
+
     keepAliveRef.current.acquire();
     startTimer();
   }, [startTimer]);
@@ -161,6 +223,19 @@ export function useRecorder(): RecorderState & RecorderActions {
   const pause = useCallback(() => {
     recorderRef.current.pause();
     setRecordingState(RecordingState.Paused);
+
+    recordingPersistenceService.saveSession({
+      version: 1,
+      recordingState: RecordingState.Paused,
+      startTimestamp: startTimestampRef.current,
+      lastUpdatedTimestamp: Date.now(),
+      elapsedSeconds: elapsedSecondsRef.current,
+      elevationGain: Number(cumulativeGainRef.current.toFixed(1)),
+      recordedDistanceMeters: currentDistanceRef.current,
+      simulatedAltitude: simulatedAltitudeRef.current,
+      trackPoints: [...recorderRef.current.trackPoints],
+    });
+
     keepAliveRef.current.release();
     stopTimer();
   }, [stopTimer]);
@@ -168,6 +243,19 @@ export function useRecorder(): RecorderState & RecorderActions {
   const resume = useCallback(() => {
     recorderRef.current.resume();
     setRecordingState(RecordingState.Recording);
+
+    recordingPersistenceService.saveSession({
+      version: 1,
+      recordingState: RecordingState.Recording,
+      startTimestamp: startTimestampRef.current,
+      lastUpdatedTimestamp: Date.now(),
+      elapsedSeconds: elapsedSecondsRef.current,
+      elevationGain: Number(cumulativeGainRef.current.toFixed(1)),
+      recordedDistanceMeters: currentDistanceRef.current,
+      simulatedAltitude: simulatedAltitudeRef.current,
+      trackPoints: [...recorderRef.current.trackPoints],
+    });
+
     keepAliveRef.current.acquire();
     startTimer();
   }, [startTimer]);
@@ -180,9 +268,11 @@ export function useRecorder(): RecorderState & RecorderActions {
   }, [stopTimer]);
 
   const reset = useCallback(() => {
+    recordingPersistenceService.clearSession();
     recorderRef.current.reset();
     setRecordingState(RecordingState.Idle);
     setElapsedSeconds(0);
+    elapsedSecondsRef.current = 0;
     simulatedAltitudeRef.current = BASE_ELEVATION_METERS;
     cumulativeGainRef.current = 0.0;
     currentDistanceRef.current = 0.0;

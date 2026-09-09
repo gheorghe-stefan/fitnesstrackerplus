@@ -12,52 +12,9 @@
  * and is immediately released on Pause, Stop, Reset, or Unmount.
  */
 
-const FALLBACK_SILENT_WAV =
-  'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
-
-function createSilentAudioUrl(): string {
-  if (typeof window === 'undefined' || typeof Blob === 'undefined' || typeof URL === 'undefined' || !URL.createObjectURL) {
-    return FALLBACK_SILENT_WAV;
-  }
-
-  try {
-    const sampleRate = 8000;
-    const numChannels = 1;
-    const bitsPerSample = 8;
-    const durationSec = 1;
-    const dataSize = sampleRate * durationSec;
-    const buffer = new ArrayBuffer(44 + dataSize);
-    const view = new DataView(buffer);
-
-    const writeString = (offset: number, str: string) => {
-      for (let i = 0; i < str.length; i++) {
-        view.setUint8(offset + i, str.charCodeAt(i));
-      }
-    };
-
-    writeString(0, 'RIFF');
-    view.setUint32(4, 36 + dataSize, true);
-    writeString(8, 'WAVE');
-    writeString(12, 'fmt ');
-    view.setUint32(16, 16, true); // Subchunk1Size (16 for PCM)
-    view.setUint16(20, 1, true); // PCM format
-    view.setUint16(22, numChannels, true);
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, sampleRate * numChannels * (bitsPerSample / 8), true);
-    view.setUint16(32, numChannels * (bitsPerSample / 8), true);
-    view.setUint16(34, bitsPerSample, true);
-    writeString(36, 'data');
-    view.setUint32(40, dataSize, true);
-
-    const bytes = new Uint8Array(buffer, 44, dataSize);
-    bytes.fill(128); // 128 is center/silence for 8-bit unsigned PCM
-
-    const blob = new Blob([buffer], { type: 'audio/wav' });
-    return URL.createObjectURL(blob);
-  } catch {
-    return FALLBACK_SILENT_WAV;
-  }
-}
+// Universally supported 44.1kHz silent MP3 data URI decoded natively by Android & iOS hardware
+const SILENT_MP3_DATA_URI =
+  'data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA//8AAABBTEFNRTMuMTAw//uQxAwAAANIAAAAAExBTUUzLjk4LjIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
 
 export class BackgroundKeepAliveService {
   private audioElement: HTMLAudioElement | null = null;
@@ -74,12 +31,12 @@ export class BackgroundKeepAliveService {
     if (typeof window === 'undefined' || typeof Audio === 'undefined') return;
 
     try {
-      this.audioUrl = createSilentAudioUrl();
+      this.audioUrl = SILENT_MP3_DATA_URI;
       this.audioElement = new Audio(this.audioUrl);
       this.audioElement.loop = true;
       this.audioElement.preload = 'auto';
-      // Low volume just in case, though the WAV itself is 100% digital silence
-      this.audioElement.volume = 0.01;
+      // 0.1 volume ensures Android's audio HAL treats this as real audible playback
+      this.audioElement.volume = 0.1;
     } catch (e) {
       console.warn('[BackgroundKeepAlive] Could not initialize audio element:', e);
     }
@@ -168,7 +125,6 @@ export class BackgroundKeepAliveService {
         this.wakeLockSentinel = null;
       });
     } catch (err) {
-      // Wake lock can fail if battery is critically low or system disallows it
       console.warn('[BackgroundKeepAlive] Wake lock request failed:', err);
     }
   }
@@ -179,9 +135,13 @@ export class BackgroundKeepAliveService {
     try {
       if (recording) {
         navigator.mediaSession.metadata = new MediaMetadata({
-          title: 'Fitness Tracker',
-          artist: 'Recording Workout',
+          title: 'FitnessTracker+',
+          artist: 'Workout Recording Active',
           album: 'FitnessTracker+',
+          artwork: [
+            { src: `${process.env.PUBLIC_URL || ''}/logo192.png`, sizes: '192x192', type: 'image/png' },
+            { src: `${process.env.PUBLIC_URL || ''}/logo512.png`, sizes: '512x512', type: 'image/png' },
+          ],
         });
         navigator.mediaSession.playbackState = 'playing';
       } else {
@@ -194,13 +154,6 @@ export class BackgroundKeepAliveService {
 
   public destroy(): void {
     this.release();
-    if (this.audioUrl && typeof URL !== 'undefined' && URL.revokeObjectURL && !this.audioUrl.startsWith('data:')) {
-      try {
-        URL.revokeObjectURL(this.audioUrl);
-      } catch {
-        // Ignore
-      }
-    }
     this.audioElement = null;
   }
 }

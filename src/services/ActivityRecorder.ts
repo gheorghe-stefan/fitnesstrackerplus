@@ -47,6 +47,11 @@ export class ActivityRecorder implements IRecorder {
     });
   }
 
+  restoreSession(state: RecordingState, trackPoints: TrackPoint[]): void {
+    this._state = state;
+    this._trackPoints = [...trackPoints];
+  }
+
   reset(): void {
     this._state = RecordingState.Idle;
     this._trackPoints = [];
